@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101923">
+  <meta name="description" content="Interface personnelle de suivi Mitsubishi Ecodan">
+  <title>Ecodan Pilotage</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">E</div>
+      <div><strong>ECODAN</strong><span>PILOTAGE</span></div>
+    </div>
+    <div class="top-status"><span class="status-dot"></span> Interface locale · Démonstration</div>
+  </header>
+
+  <main class="shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">MITSUBISHI ELECTRIC · ZUBADAN</p>
+        <h1>Vue d’ensemble</h1>
+        <p class="muted">Tableau de bord de ton installation de chauffage.</p>
+      </div>
+      <div class="demo-pill">MODE DÉMONSTRATION</div>
+    </section>
+
+    <section class="notice" role="status">
+      <strong>Pas encore connecté à la PAC.</strong>
+      <p>Les valeurs ci-dessous sont des exemples d’interface, pas des mesures réelles. La connexion MELCloud sera ajoutée après validation du backend sécurisé.</p>
+    </section>
+
+    <section class="cards">
+      <article class="metric-card">
+        <div class="metric-label">Température extérieure</div>
+        <div class="metric-value">— <small>°C</small></div>
+        <div class="metric-foot">En attente des données MELCloud</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Température ambiante</div>
+        <div class="metric-value">— <small>°C</small></div>
+        <div class="metric-foot">Thermostat PAR-WT50R-E</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Consigne intérieure</div>
+        <div class="metric-value">— <small>°C</small></div>
+        <div class="metric-foot">Zone unique</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">État du chauffage</div>
+        <div class="metric-value state-value">Non connecté</div>
+        <div class="metric-foot">Unité Ecodan Zubadan</div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div><p class="eyebrow">INSTALLATION</p><h2>Équipement détecté à configurer</h2></div>
+        <span class="tag">FTC5</span>
+      </div>
+      <dl class="equipment">
+        <div><dt>Unité extérieure</dt><dd>PUHZ-SHW112VAA</dd></div>
+        <div><dt>Module hydraulique</dt><dd>EHSC-VM6C</dd></div>
+        <div><dt>Régulation</dt><dd>FTC5</dd></div>
+        <div><dt>Interface Wi-Fi</dt><dd>MAC-587IF-E</dd></div>
+        <div><dt>Thermostat radio</dt><dd>PAR-WT50R-E</dd></div>
+        <div><dt>Récepteur radio</dt><dd>PAR-WR51R-E</dd></div>
+        <div><dt>Configuration</dt><dd>Chauffage · 1 zone · Sans ECS</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel next-panel">
+      <p class="eyebrow">PROCHAINES ÉTAPES</p>
+      <h2>Connexion sécurisée</h2>
+      <ol>
+        <li>Publier cette interface sur GitHub Pages.</li>
+        <li>Créer un backend séparé pour communiquer avec MELCloud classique.</li>
+        <li>Tester la lecture seule et identifier les données réellement disponibles.</li>
+        <li>Ajouter les commandes uniquement après validation.</li>
+      </ol>
+      <p class="muted small">Aucun identifiant ni mot de passe ne doit être placé dans les fichiers de ce dépôt.</p>
+    </section>
+    <footer>ECODAN PILOTAGE <span>·</span> Prototype initial</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

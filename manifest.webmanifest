@@ -1,0 +1,14 @@
+{
+  "name": "Ecodan Pilotage",
+  "short_name": "Ecodan",
+  "description": "Interface personnelle de suivi Mitsubishi Ecodan",
+  "lang": "fr-FR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b121a",
+  "theme_color": "#101923",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

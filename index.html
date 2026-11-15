@@ -154,7 +154,8 @@ function actualiserNouvelleConsigne() {
 document.getElementById('btnAppliquer').addEventListener('click', function() {
   const message = document.getElementById('messageConsigne');
   const consigne = window.nouvelleConsigne;
-
+console.log('[ECODAN] Consigne préparée pour envoi :', consigne);
+  
   if (!Number.isFinite(consigne) || consigne < 15 || consigne > 25) {
     message.textContent = 'Consigne invalide.';
     return;

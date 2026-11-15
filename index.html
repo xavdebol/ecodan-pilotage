@@ -278,7 +278,7 @@
     const donnees = result.data;
 
 window.temperatureChart.data.labels =
-  donnees.map(d => {
+  donnees.map(d => heureFrancaise(d.heure));
     const [heure, minute] = d.heure.split(':').map(Number);
     const date = new Date();
     date.setHours(heure, minute, 0, 0);

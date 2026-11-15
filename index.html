@@ -79,10 +79,11 @@
 </div>
   </section>
 
-  <div class="status">Données MELCloud : connexion à configurer</div>
+<div class="status" id="connectionStatus">Connexion à MELCloud...</div>
 </main>
   
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
 
 <script>
   const ctx = document.getElementById('temperatureChart');
@@ -93,19 +94,17 @@
       labels: [],
       datasets: [
         {
-          label: 'Départ',
+          label: 'Température de départ',
           data: [],
           borderColor: '#ef4444',
-          backgroundColor: '#ef4444',
           borderWidth: 2,
           pointRadius: 2,
           tension: 0.3
         },
         {
-          label: 'Retour',
+          label: 'Température de retour',
           data: [],
           borderColor: '#3b82f6',
-          backgroundColor: '#3b82f6',
           borderWidth: 2,
           pointRadius: 2,
           tension: 0.3
@@ -114,10 +113,10 @@
           label: 'ΔT',
           data: [],
           borderColor: '#22c55e',
-          backgroundColor: '#22c55e',
           borderWidth: 2,
           pointRadius: 2,
           borderDash: [5, 4],
+          yAxisID: 'delta',
           tension: 0.3
         }
       ]
@@ -145,18 +144,83 @@
         y: {
           min: 0,
           max: 50,
+          position: 'left',
           title: {
             display: true,
-            text: 'Température (°C)',
+            text: 'Températures (°C)',
             color: '#9ca3af'
           },
           ticks: { color: '#9ca3af' },
           grid: { color: '#374151' }
+        },
+        delta: {
+          min: 0,
+          max: 15,
+          position: 'right',
+          title: {
+            display: true,
+            text: 'ΔT (°C)',
+            color: '#22c55e'
+          },
+          ticks: { color: '#22c55e' },
+          grid: { drawOnChartArea: false }
         }
       }
     }
   });
+
+  // Réception des données de la PAC
+  window.ecodanReceiveData = function(result) {
+    const status = document.getElementById('connectionStatus');
+
+    if (!result || !result.success || !result.data) {
+      status.textContent = 'Erreur de réception des données MELCloud';
+      return;
+    }
+
+    const donnees = result.data;
+
+    window.temperatureChart.data.labels =
+      donnees.map(d => d.heure);
+
+    window.temperatureChart.data.datasets[0].data =
+      donnees.map(d => d.depart);
+
+    window.temperatureChart.data.datasets[1].data =
+      donnees.map(d => d.retour);
+
+    window.temperatureChart.data.datasets[2].data =
+      donnees.map(d => d.deltaT);
+
+    window.temperatureChart.update();
+
+    status.textContent =
+      'Données MELCloud actualisées : ' +
+      new Date(result.updatedAt).toLocaleString('fr-FR');
+  };
+
+  // Demande des données à Google Apps Script
+  function chargerTemperatures() {
+    const script = document.createElement('script');
+
+    script.src =
+      'https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uqW_emEJiBmzo_zsZGUREEm09rmAu_yY9XnJZA/exec' +
+      '?callback=ecodanReceiveData&t=' + Date.now();
+
+    script.onerror = function() {
+      document.getElementById('connectionStatus').textContent =
+        'Impossible de contacter la passerelle MELCloud';
+    };
+
+    document.body.appendChild(script);
+  }
+
+  chargerTemperatures();
+
+  // Actualisation toutes les 5 minutes
+  setInterval(chargerTemperatures, 5 * 60 * 1000);
 </script>
+
 
 </body>
 </html>

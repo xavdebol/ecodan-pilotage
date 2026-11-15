@@ -162,24 +162,30 @@ document.getElementById('btnAppliquer').addEventListener('click', function() {
 
   message.textContent = 'Envoi de la commande...';
 
-  fetch('https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uqW_emEJiBmzo_zsZGUREEm09rmAu_yY9XnJZA/exec', {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {
-      'Content-Type': 'text/plain;charset=UTF-8'
-    },
-    body: JSON.stringify({
-      consigne: consigne
-    })
+fetch('https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uqW_emEJiBmzo_zsZGUREEm09rmAu_yY9XnJZA/exec', {
+  method: 'POST',
+  mode: 'no-cors',
+  headers: {
+    'Content-Type': 'text/plain;charset=UTF-8'
+  },
+  body: JSON.stringify({
+    consigne: consigne
   })
-  .then(function() {
-    message.textContent =
-      'Commande envoyée. Vérifie la consigne sur la carte après actualisation.';
-  })
-  .catch(function(erreur) {
-    console.error('Erreur envoi consigne :', erreur);
-    message.textContent = 'Erreur lors de l’envoi de la commande.';
-  });
+})
+.then(function() {
+  // Mémorisation de la consigne à vérifier
+  window.consigneAttendueVerification = consigne;
+  window.tentativesVerification = 0;
+
+  message.textContent =
+    'Commande envoyée. Vérification auprès de MELCloud...';
+
+  // Première relecture après 3 secondes
+  setTimeout(chargerTemperatures, 3000);
+})
+.catch(function(erreur) {
+  console.error('Erreur envoi consigne :', erreur);
+  message.textContent = 'Erreur lors de l’envoi de la commande.';
 });
 document.getElementById('btnMoins').addEventListener('click', function() {
   window.nouvelleConsigne = Math.max(
@@ -377,7 +383,34 @@ console.log("Données reçues :", live);
 // Mise à jour des indicateurs de fonctionnement
 if (live) {
   const consigneActuelle = Number(live.consigne);
+  // Vérification de la consigne réellement enregistrée
+  if (window.consigneAttendueVerification !== undefined) {
 
+    if (Math.abs(consigneActuelle - window.consigneAttendueVerification) < 0.01) {
+
+      document.getElementById('messageConsigne').textContent =
+        '✓ Consigne confirmée par MELCloud : ' +
+        consigneActuelle.toFixed(1) + ' °C';
+
+      window.consigneAttendueVerification = undefined;
+
+    } else {
+
+      window.tentativesVerification++;
+
+      if (window.tentativesVerification < 5) {
+        document.getElementById('messageConsigne').textContent =
+          'Vérification en cours auprès de MELCloud...';
+
+        setTimeout(chargerTemperatures, 3000);
+
+      } else {
+        document.getElementById('messageConsigne').textContent =
+          'Commande envoyée, mais confirmation non reçue. Vérifie MELCloud.';
+        window.consigneAttendueVerification = undefined;
+      }
+    }
+  }
   document.getElementById('liveConsigne').innerHTML =
     consigneActuelle.toFixed(1) + ' <span class="unit">°C</span>';
 

@@ -274,6 +274,84 @@
   setInterval(chargerTemperatures, 5 * 60 * 1000);
 </script>
 
+function testMelcloudRoomAndOutdoor() {
+  const props = PropertiesService.getScriptProperties();
+  const email = props.getProperty("MELCLOUD_EMAIL");
+  const password = props.getProperty("MELCLOUD_PASSWORD");
+
+  const base = "https://app.melcloud.com/Mitsubishi.Wifi.Client/";
+
+  // Connexion MELCloud
+  const loginResponse = UrlFetchApp.fetch(
+    base + "Login/ClientLogin3",
+    {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({
+        Email: email,
+        Password: password,
+        Language: 7,
+        AppVersion: "1.34.13.0",
+        Persist: true,
+        CaptchaChallenge: "",
+        CaptchaResponse: null
+      })
+    }
+  );
+
+  const login = JSON.parse(loginResponse.getContentText());
+  const contextKey = login.LoginData && login.LoginData.ContextKey;
+
+  if (!contextKey) {
+    throw new Error("Échec de connexion MELCloud");
+  }
+
+  // Dernières 24 heures
+  const timezone = Session.getScriptTimeZone();
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  const formatDate = d =>
+    Utilities.formatDate(d, timezone, "yyyy-MM-dd'T'HH:mm:ss");
+
+  // Lecture des températures horaires
+  const response = UrlFetchApp.fetch(
+    base + "Report/GetTemperatureLog2",
+    {
+      method: "post",
+      contentType: "application/json",
+      headers: {
+        "X-MitsContextKey": contextKey
+      },
+      payload: JSON.stringify({
+        DeviceID: 209471,
+        Duration: 1,
+        Location: "19105",
+        FromDate: formatDate(yesterday),
+        ToDate: formatDate(now)
+      })
+    }
+  );
+
+  if (response.getResponseCode() !== 200) {
+    throw new Error("Erreur MELCloud HTTP " + response.getResponseCode());
+  }
+
+  const result = JSON.parse(response.getContentText());
+
+  // Data[1] = température de la pièce
+  // Data[2] = température extérieure
+  const donnees = result.Labels.map((heure, i) => ({
+    heure: heure,
+    interieur: result.Data[1][i],
+    exterieur: result.Data[2][i]
+  }));
+
+  Logger.log(JSON.stringify(donnees, null, 2));
+
+  return donnees;
+}
+
 
 </body>
 </html>

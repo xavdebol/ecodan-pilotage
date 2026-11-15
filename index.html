@@ -320,13 +320,29 @@ if (live) {
     live.offline ? 'Hors ligne' : 'Connectée';
 }
 
-window.roomOutdoorChart.data.labels = hourly.map(d => {
-  const [heure, minute] = d.heure.split(':').map(Number);
+
+function heureFrancaise(heureMelcloud) {
+  const [heure, minute] = heureMelcloud.split(':').map(Number);
   const date = new Date();
   date.setHours(heure, minute, 0, 0);
-  date.setMinutes(date.getMinutes() + 60);
-  return date.getHours() + ':' + String(date.getMinutes()).padStart(2, '0');
-});
+
+  const decalage = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Paris',
+    timeZoneName: 'shortOffset'
+  }).formatToParts(date)
+    .find(p => p.type === 'timeZoneName').value;
+
+  const heuresDecalage = decalage.includes('+02') ? 2 : 1;
+
+  date.setHours(heure + heuresDecalage, minute);
+
+  return date.getHours() + ':' +
+    String(date.getMinutes()).padStart(2, '0');
+}
+
+window.roomOutdoorChart.data.labels =
+  hourly.map(d => heureFrancaise(d.heure));
+
 
     window.roomOutdoorChart.data.datasets[0].data =
       hourly.map(d => d.interieur);

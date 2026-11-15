@@ -191,7 +191,6 @@ fetch('https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uq
 }); // Fin du bouton Appliquer
 
 document.getElementById('btnMoins').addEventListener('click', function() {
-document.getElementById('btnMoins').addEventListener('click', function() {
   window.nouvelleConsigne = Math.max(
     15,
     window.nouvelleConsigne - 0.5
@@ -206,7 +205,8 @@ document.getElementById('btnPlus').addEventListener('click', function() {
   );
   actualiserNouvelleConsigne();
 });
-  const ctx = document.getElementById('temperatureChart');
+
+const ctx = document.getElementById('temperatureChart');
 
   window.temperatureChart = new Chart(ctx, {
     type: 'line',

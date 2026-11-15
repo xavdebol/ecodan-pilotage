@@ -278,7 +278,18 @@
       donnees.map(d => d.deltaT);
 
     window.temperatureChart.update();
+    // Mise à jour du graphique des températures intérieure et extérieure
+    const hourly = result.hourlyData || [];
 
+    window.roomOutdoorChart.data.labels = hourly.map(d => d.heure);
+
+    window.roomOutdoorChart.data.datasets[0].data =
+      hourly.map(d => d.interieur);
+
+    window.roomOutdoorChart.data.datasets[1].data =
+      hourly.map(d => d.exterieur);
+
+    window.roomOutdoorChart.update();
     // Mise à jour des trois indicateurs
     // Recherche du dernier relevé complet disponible
     let dernier = null;

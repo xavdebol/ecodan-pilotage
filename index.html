@@ -72,6 +72,32 @@
     </div>
   </section>
 
+<section class="cards" id="liveTemperatures">
+  <div class="card">
+    <div class="label">Température de départ</div>
+    <div class="value" style="color:#ef4444">
+      <span id="liveDepart">--</span>
+      <span class="unit">°C</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Température de retour</div>
+    <div class="value" style="color:#3b82f6">
+      <span id="liveRetour">--</span>
+      <span class="unit">°C</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Écart de température (ΔT)</div>
+    <div class="value" style="color:#22c55e">
+      <span id="liveDeltaT">--</span>
+      <span class="unit">°C</span>
+    </div>
+  </div>
+</section>
+
   <section class="panel">
     <h2>Températures du circuit de chauffage</h2>
 <div style="height:320px; position:relative;">
@@ -193,6 +219,33 @@
       donnees.map(d => d.deltaT);
 
     window.temperatureChart.update();
+
+    // Mise à jour des trois indicateurs
+    // Recherche du dernier relevé complet disponible
+    let dernier = null;
+
+    for (let i = donnees.length - 1; i >= 0; i--) {
+      const d = donnees[i];
+
+      if (
+        d.depart !== null && d.depart !== undefined &&
+        d.retour !== null && d.retour !== undefined
+      ) {
+        dernier = d;
+        break;
+      }
+    }
+
+    if (dernier) {
+      document.getElementById('liveDepart').textContent =
+        Number(dernier.depart).toFixed(1);
+
+      document.getElementById('liveRetour').textContent =
+        Number(dernier.retour).toFixed(1);
+
+      document.getElementById('liveDeltaT').textContent =
+        Number(dernier.deltaT).toFixed(1);
+    }
 
     status.textContent =
       'Données MELCloud actualisées : ' +

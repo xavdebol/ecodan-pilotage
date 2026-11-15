@@ -1,91 +1,85 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101923">
-  <meta name="description" content="Interface personnelle de suivi Mitsubishi Ecodan">
+  <meta name="theme-color" content="#111827">
   <title>Ecodan Pilotage</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #111827;
+      color: #f3f4f6;
+      font-family: Arial, sans-serif;
+    }
+    main { max-width: 1000px; margin: auto; }
+    h1 { font-size: 26px; margin-bottom: 5px; }
+    .subtitle { color: #9ca3af; margin-bottom: 25px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .card, .panel {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .label { color: #9ca3af; font-size: 14px; }
+    .value { font-size: 28px; font-weight: bold; margin-top: 9px; }
+    .unit { font-size: 15px; color: #9ca3af; }
+    .panel h2 { font-size: 18px; margin: 0 0 16px; }
+    .chart-placeholder {
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+      color: #9ca3af;
+      text-align: center;
+      border: 1px dashed #4b5563;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .status { color: #9ca3af; font-size: 13px; margin-top: 18px; }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">E</div>
-      <div><strong>ECODAN</strong><span>PILOTAGE</span></div>
+<main>
+  <h1>Ecodan Pilotage</h1>
+  <div class="subtitle">Surveillance de votre pompe à chaleur Mitsubishi</div>
+
+  <section class="cards">
+    <div class="card">
+      <div class="label">Température extérieure</div>
+      <div class="value">-- <span class="unit">°C</span></div>
     </div>
-    <div class="top-status"><span class="status-dot"></span> Interface locale · Démonstration</div>
-  </header>
+    <div class="card">
+      <div class="label">Température ambiante</div>
+      <div class="value">-- <span class="unit">°C</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Température de départ</div>
+      <div class="value">-- <span class="unit">°C</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Température de retour</div>
+      <div class="value">-- <span class="unit">°C</span></div>
+    </div>
+  </section>
 
-  <main class="shell">
-    <section class="intro">
-      <div>
-        <p class="eyebrow">MITSUBISHI ELECTRIC · ZUBADAN</p>
-        <h1>Vue d’ensemble</h1>
-        <p class="muted">Tableau de bord de ton installation de chauffage.</p>
-      </div>
-      <div class="demo-pill">MODE DÉMONSTRATION</div>
-    </section>
+  <section class="panel">
+    <h2>Températures du circuit de chauffage</h2>
+    <div class="chart-placeholder">
+      Le graphique des températures de départ, de retour et du ΔT sera intégré ici.
+    </div>
+  </section>
 
-    <section class="notice" role="status">
-      <strong>Pas encore connecté à la PAC.</strong>
-      <p>Les valeurs ci-dessous sont des exemples d’interface, pas des mesures réelles. La connexion MELCloud sera ajoutée après validation du backend sécurisé.</p>
-    </section>
-
-    <section class="cards">
-      <article class="metric-card">
-        <div class="metric-label">Température extérieure</div>
-        <div class="metric-value">— <small>°C</small></div>
-        <div class="metric-foot">En attente des données MELCloud</div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-label">Température ambiante</div>
-        <div class="metric-value">— <small>°C</small></div>
-        <div class="metric-foot">Thermostat PAR-WT50R-E</div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-label">Consigne intérieure</div>
-        <div class="metric-value">— <small>°C</small></div>
-        <div class="metric-foot">Zone unique</div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-label">État du chauffage</div>
-        <div class="metric-value state-value">Non connecté</div>
-        <div class="metric-foot">Unité Ecodan Zubadan</div>
-      </article>
-    </section>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <div><p class="eyebrow">INSTALLATION</p><h2>Équipement détecté à configurer</h2></div>
-        <span class="tag">FTC5</span>
-      </div>
-      <dl class="equipment">
-        <div><dt>Unité extérieure</dt><dd>PUHZ-SHW112VAA</dd></div>
-        <div><dt>Module hydraulique</dt><dd>EHSC-VM6C</dd></div>
-        <div><dt>Régulation</dt><dd>FTC5</dd></div>
-        <div><dt>Interface Wi-Fi</dt><dd>MAC-587IF-E</dd></div>
-        <div><dt>Thermostat radio</dt><dd>PAR-WT50R-E</dd></div>
-        <div><dt>Récepteur radio</dt><dd>PAR-WR51R-E</dd></div>
-        <div><dt>Configuration</dt><dd>Chauffage · 1 zone · Sans ECS</dd></div>
-      </dl>
-    </section>
-
-    <section class="panel next-panel">
-      <p class="eyebrow">PROCHAINES ÉTAPES</p>
-      <h2>Connexion sécurisée</h2>
-      <ol>
-        <li>Publier cette interface sur GitHub Pages.</li>
-        <li>Créer un backend séparé pour communiquer avec MELCloud classique.</li>
-        <li>Tester la lecture seule et identifier les données réellement disponibles.</li>
-        <li>Ajouter les commandes uniquement après validation.</li>
-      </ol>
-      <p class="muted small">Aucun identifiant ni mot de passe ne doit être placé dans les fichiers de ce dépôt.</p>
-    </section>
-    <footer>ECODAN PILOTAGE <span>·</span> Prototype initial</footer>
-  </main>
-  <script src="app.js"></script>
+  <div class="status">Données MELCloud : connexion à configurer</div>
+</main>
 </body>
 </html>

@@ -272,7 +272,8 @@
     window.temperatureChart.update();
     // Mise à jour du graphique des températures intérieure et extérieure
     const hourly = result.hourlyData || [];
-
+const live = result.liveData;
+console.log("Données PAC en direct :", live);
     window.roomOutdoorChart.data.labels = hourly.map(d => d.heure);
 
     window.roomOutdoorChart.data.datasets[0].data =

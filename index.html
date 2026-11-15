@@ -198,7 +198,62 @@
       }
     }
   });
+  const ctxRoom = document.getElementById('roomOutdoorChart').getContext('2d');
 
+  window.roomOutdoorChart = new Chart(ctxRoom, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Température intérieure',
+          data: [],
+          borderColor: '#f59e0b',
+          backgroundColor: '#f59e0b',
+          tension: 0.3,
+          pointRadius: 2
+        },
+        {
+          label: 'Température extérieure',
+          data: [],
+          borderColor: '#38bdf8',
+          backgroundColor: '#38bdf8',
+          tension: 0.3,
+          pointRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          labels: { color: '#e5e7eb' }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#9ca3af' },
+          grid: { color: '#374151' }
+        },
+        y: {
+          min: 0,
+          max: 30,
+          title: {
+            display: true,
+            text: 'Température (°C)',
+            color: '#9ca3af'
+          },
+          ticks: { color: '#9ca3af' },
+          grid: { color: '#374151' }
+        }
+      }
+    }
+  });
   // Réception des données de la PAC
   window.ecodanReceiveData = function(result) {
     const status = document.getElementById('connectionStatus');

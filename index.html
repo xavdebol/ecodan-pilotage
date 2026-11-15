@@ -360,7 +360,12 @@ if (live) {
 
     status.textContent =
       'Données MELCloud actualisées : ' +
-      new Date(result.updatedAt).toLocaleString('fr-FR');
+new Date(result.updatedAt).toLocaleString('fr-FR', {
+  timeZone: 'Europe/Paris'
+  new Date(live.derniereCommunication).toLocaleString('fr-FR', {
+  timeZone: 'Europe/Paris'
+});
+});
   };
 
   // Demande des données à Google Apps Script

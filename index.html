@@ -187,6 +187,10 @@ fetch('https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uq
   console.error('Erreur envoi consigne :', erreur);
   message.textContent = 'Erreur lors de l’envoi de la commande.';
 });
+
+}); // Fin du bouton Appliquer
+
+document.getElementById('btnMoins').addEventListener('click', function() {
 document.getElementById('btnMoins').addEventListener('click', function() {
   window.nouvelleConsigne = Math.max(
     15,

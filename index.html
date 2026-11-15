@@ -294,7 +294,8 @@
     const hourly = result.hourlyData || [];
 const live = result.liveData;
 console.log("Données PAC en direct :", live);
-    
+    console.log("État Offline reçu :", live.offline);
+console.log("État Power reçu :", live.power);
 // Mise à jour des indicateurs de fonctionnement
 if (live) {
   document.getElementById('liveConsigne').innerHTML =

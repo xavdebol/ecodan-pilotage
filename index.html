@@ -371,14 +371,13 @@ window.roomOutdoorChart.data.labels = hourly.map(d => {
         Number(dernier.deltaT).toFixed(1);
     }
 
-    status.textContent =
-      'Données MELCloud actualisées : ' +
-new Date(result.updatedAt).toLocaleString('fr-FR', {
-  timeZone: 'Europe/Paris'
-  new Date(live.derniereCommunication).toLocaleString('fr-FR', {
-  timeZone: 'Europe/Paris'
-});
-});
+
+status.textContent =
+  'Données MELCloud actualisées : ' +
+  new Date(result.updatedAt).toLocaleString('fr-FR', {
+    timeZone: 'Europe/Paris'
+  });
+
   };
 
   // Demande des données à Google Apps Script

@@ -150,7 +150,37 @@ function actualiserNouvelleConsigne() {
   document.getElementById('nouvelleConsigne').textContent =
     window.nouvelleConsigne.toFixed(1) + ' °C';
 }
+// Envoi de la nouvelle consigne à la PAC
+document.getElementById('btnAppliquer').addEventListener('click', function() {
+  const message = document.getElementById('messageConsigne');
+  const consigne = window.nouvelleConsigne;
 
+  if (!Number.isFinite(consigne) || consigne < 15 || consigne > 25) {
+    message.textContent = 'Consigne invalide.';
+    return;
+  }
+
+  message.textContent = 'Envoi de la commande...';
+
+  fetch('https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uqW_emEJiBmzo_zsZGUREEm09rmAu_yY9XnJZA/exec', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'text/plain;charset=UTF-8'
+    },
+    body: JSON.stringify({
+      consigne: consigne
+    })
+  })
+  .then(function() {
+    message.textContent =
+      'Commande envoyée. Vérifie la consigne sur la carte après actualisation.';
+  })
+  .catch(function(erreur) {
+    console.error('Erreur envoi consigne :', erreur);
+    message.textContent = 'Erreur lors de l’envoi de la commande.';
+  });
+});
 document.getElementById('btnMoins').addEventListener('click', function() {
   window.nouvelleConsigne = Math.max(
     15,

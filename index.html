@@ -294,6 +294,22 @@
     const hourly = result.hourlyData || [];
 const live = result.liveData;
 console.log("Données PAC en direct :", live);
+    
+// Mise à jour des indicateurs de fonctionnement
+if (live) {
+  document.getElementById('liveConsigne').innerHTML =
+    Number(live.consigne).toFixed(1) + ' <span class="unit">°C</span>';
+
+  document.getElementById('livePower').textContent =
+    live.power ? 'En marche' : 'À l’arrêt';
+
+  document.getElementById('liveDemande').textContent =
+    live.demande + ' %';
+
+  document.getElementById('liveConnexion').textContent =
+    live.offline ? 'Hors ligne' : 'Connectée';
+}
+
     window.roomOutdoorChart.data.labels = hourly.map(d => d.heure);
 
     window.roomOutdoorChart.data.datasets[0].data =

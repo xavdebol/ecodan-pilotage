@@ -74,12 +74,89 @@
 
   <section class="panel">
     <h2>Températures du circuit de chauffage</h2>
-    <div class="chart-placeholder">
-      Le graphique des températures de départ, de retour et du ΔT sera intégré ici.
-    </div>
+<div style="height:320px; position:relative;">
+  <canvas id="temperatureChart"></canvas>
+</div>
   </section>
 
   <div class="status">Données MELCloud : connexion à configurer</div>
 </main>
+  
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
+<script>
+  const ctx = document.getElementById('temperatureChart');
+
+  window.temperatureChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Départ',
+          data: [],
+          borderColor: '#ef4444',
+          backgroundColor: '#ef4444',
+          borderWidth: 2,
+          pointRadius: 2,
+          tension: 0.3
+        },
+        {
+          label: 'Retour',
+          data: [],
+          borderColor: '#3b82f6',
+          backgroundColor: '#3b82f6',
+          borderWidth: 2,
+          pointRadius: 2,
+          tension: 0.3
+        },
+        {
+          label: 'ΔT',
+          data: [],
+          borderColor: '#22c55e',
+          backgroundColor: '#22c55e',
+          borderWidth: 2,
+          pointRadius: 2,
+          borderDash: [5, 4],
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#f3f4f6',
+            usePointStyle: true
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#9ca3af' },
+          grid: { color: '#374151' }
+        },
+        y: {
+          min: 0,
+          max: 50,
+          title: {
+            display: true,
+            text: 'Température (°C)',
+            color: '#9ca3af'
+          },
+          ticks: { color: '#9ca3af' },
+          grid: { color: '#374151' }
+        }
+      }
+    }
+  });
+</script>
+
 </body>
 </html>

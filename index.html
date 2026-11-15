@@ -282,7 +282,16 @@
       hourly.map(d => d.exterieur);
 
     window.roomOutdoorChart.update();
-    // Mise à jour des trois indicateurs
+    // Mise à jour des indicateurs principaux
+    const derniereHeure = hourly[hourly.length - 1];
+
+    if (derniereHeure) {
+      document.getElementById('liveExterieur').innerHTML =
+        derniereHeure.exterieur.toFixed(1) + ' <span class="unit">°C</span>';
+
+      document.getElementById('liveInterieur').innerHTML =
+        derniereHeure.interieur.toFixed(1) + ' <span class="unit">°C</span>';
+    }
     // Recherche du dernier relevé complet disponible
     let dernier = null;
 

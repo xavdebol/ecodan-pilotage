@@ -145,6 +145,27 @@
 
 
 <script>
+  // Gestion de la consigne de chauffage
+function actualiserNouvelleConsigne() {
+  document.getElementById('nouvelleConsigne').textContent =
+    window.nouvelleConsigne.toFixed(1) + ' °C';
+}
+
+document.getElementById('btnMoins').addEventListener('click', function() {
+  window.nouvelleConsigne = Math.max(
+    15,
+    window.nouvelleConsigne - 0.5
+  );
+  actualiserNouvelleConsigne();
+});
+
+document.getElementById('btnPlus').addEventListener('click', function() {
+  window.nouvelleConsigne = Math.min(
+    25,
+    window.nouvelleConsigne + 0.5
+  );
+  actualiserNouvelleConsigne();
+});
   const ctx = document.getElementById('temperatureChart');
 
   window.temperatureChart = new Chart(ctx, {

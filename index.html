@@ -226,6 +226,7 @@
           tension: 0.3,
           pointRadius: 2
         },
+
         {
           label: 'Température extérieure',
           data: [],
@@ -233,7 +234,17 @@
           backgroundColor: '#38bdf8',
           tension: 0.3,
           pointRadius: 2
+        },
+        {
+          label: 'Consigne chauffage',
+          data: [],
+          borderColor: '#ef4444',
+          backgroundColor: '#ef4444',
+          tension: 0,
+          pointRadius: 0,
+          borderDash: [6, 4]
         }
+
       ]
     },
     options: {
@@ -342,6 +353,9 @@ window.roomOutdoorChart.data.labels =
 
     window.roomOutdoorChart.data.datasets[1].data =
       hourly.map(d => d.exterieur);
+    
+    window.roomOutdoorChart.data.datasets[2].data =
+      hourly.map(() => live ? Number(live.consigne) : null);
 
     window.roomOutdoorChart.update();
     // Mise à jour des indicateurs principaux

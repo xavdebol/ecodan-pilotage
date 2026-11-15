@@ -279,13 +279,6 @@
 
 window.temperatureChart.data.labels =
   donnees.map(d => heureFrancaise(d.heure));
-    const [heure, minute] = d.heure.split(':').map(Number);
-    const date = new Date();
-    date.setHours(heure, minute, 0, 0);
-    date.setMinutes(date.getMinutes() + 60);
-    return date.getHours() + ':' +
-      String(date.getMinutes()).padStart(2, '0');
-  });
 
     window.temperatureChart.data.datasets[0].data =
       donnees.map(d => d.depart);

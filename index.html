@@ -70,6 +70,20 @@
   </div>
 
   <div class="card">
+    <div class="label">Modifier la consigne</div>
+    <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+      <button id="btnMoins" type="button">−</button>
+      <div id="nouvelleConsigne" style="font-size:24px; font-weight:bold;">20 °C</div>
+      <button id="btnPlus" type="button">+</button>
+    </div>
+    <button id="btnAppliquer" type="button" style="margin-top:12px;">
+      Appliquer
+    </button>
+    <div id="messageConsigne" style="margin-top:8px; font-size:13px;"></div>
+  </div>
+</section>
+
+  <div class="card">
     <div class="label">État de la PAC</div>
     <div class="value" id="livePower">--</div>
   </div>
@@ -311,8 +325,19 @@ console.log("État Power reçu :", live.power);
 console.log("Données reçues :", live);
 // Mise à jour des indicateurs de fonctionnement
 if (live) {
+  const consigneActuelle = Number(live.consigne);
+
   document.getElementById('liveConsigne').innerHTML =
-    Number(live.consigne).toFixed(1) + ' <span class="unit">°C</span>';
+    consigneActuelle.toFixed(1) + ' <span class="unit">°C</span>';
+
+  // Synchronisation de la consigne à modifier
+  if (!window.consigneEnCoursInitialisee) {
+    window.nouvelleConsigne = consigneActuelle;
+    window.consigneEnCoursInitialisee = true;
+
+    document.getElementById('nouvelleConsigne').textContent =
+      window.nouvelleConsigne.toFixed(1) + ' °C';
+  }
 
   document.getElementById('livePower').textContent =
     live.power ? 'En marche' : 'À l’arrêt';

@@ -522,9 +522,9 @@ status.textContent =
   function chargerTemperatures() {
     const script = document.createElement('script');
 
-    script.src =
-      'https://script.google.com/macros/s/AKfycbyvdvsUrmhJefHjFVB08_j-W6aYZoVlH2e5htC9tSgFdtQN06TlAj7vwveS7dKCcCpiqQ/exec' +
-      '?callback=ecodanReceiveData&t=' + Date.now();
+script.src =
+  'https://script.google.com/macros/s/AKfycbx-6Ez5m1JCrAySFFJ_oo2--x6loGK9uqW_emEJiBmzo_zsZGUREEm09rmAu_yY9XnJZA/exec' +
+  '?callback=ecodanReceiveData&t=' + Date.now();
 
     script.onerror = function() {
       document.getElementById('connectionStatus').textContent =

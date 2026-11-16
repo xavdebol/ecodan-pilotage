@@ -46,6 +46,127 @@
       padding: 20px;
     }
     .status { color: #9ca3af; font-size: 13px; margin-top: 18px; }
+  
+/* Programmateur hebdomadaire */
+.timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.timer-header h2 {
+  margin: 0 0 5px;
+}
+
+.timer-description {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.timer-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 650px;
+  border: 1px solid #374151;
+  border-radius: 8px;
+}
+
+.timer-calendar {
+  min-width: 950px;
+}
+
+.timer-days {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(120px, 1fr));
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #1f2937;
+  border-bottom: 1px solid #4b5563;
+}
+
+.timer-corner,
+.timer-day {
+  padding: 12px 5px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+  border-right: 1px solid #374151;
+}
+
+.timer-day {
+  color: #e5e7eb;
+}
+
+.timer-body {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(120px, 1fr));
+}
+
+.timer-hours {
+  background: #1f2937;
+}
+
+.timer-hour {
+  height: 60px;
+  padding: 3px 7px;
+  text-align: right;
+  color: #9ca3af;
+  font-size: 11px;
+  border-bottom: 1px solid #374151;
+}
+
+.timer-day-column {
+  height: 1440px;
+  position: relative;
+  border-right: 1px solid #374151;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 59px,
+      #374151 59px,
+      #374151 60px
+    );
+}
+
+.timer-event {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  min-height: 42px;
+  padding: 5px;
+  border-radius: 5px;
+  background: #287d58;
+  color: white;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.timer-event.evening {
+  background: #426a9d;
+}
+
+.timer-event strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.timer-status {
+  margin-top: 12px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .timer-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -135,6 +256,31 @@
   <h2>Température horaire</h2>
   <div style="height:320px; position:relative;">
     <canvas id="roomOutdoorChart"></canvas>
+  </div>
+</section>
+
+<section class="panel" id="timerPanel">
+  <div class="timer-header">
+    <div>
+      <h2>Programmation hebdomadaire</h2>
+      <div class="timer-description">
+        Planning chauffage synchronisé avec MELCloud
+      </div>
+    </div>
+    <button id="btnActualiserTimer" type="button">
+      Actualiser
+    </button>
+  </div>
+
+  <div class="timer-scroll">
+    <div class="timer-calendar">
+      <div class="timer-days" id="timerDays"></div>
+      <div class="timer-body" id="timerBody"></div>
+    </div>
+  </div>
+
+  <div class="timer-status" id="timerStatus">
+    Préparation de la grille hebdomadaire...
   </div>
 </section>
 
@@ -533,6 +679,50 @@ script.src =
 
     document.body.appendChild(script);
   }
+
+function initialiserGrilleHebdomadaire() {
+  const jours = [
+    "Lundi", "Mardi", "Mercredi", "Jeudi",
+    "Vendredi", "Samedi", "Dimanche"
+  ];
+
+  const entete = document.getElementById("timerDays");
+  const corps = document.getElementById("timerBody");
+
+  entete.innerHTML = '<div class="timer-corner">Heure</div>';
+  corps.innerHTML = "";
+
+  jours.forEach(jour => {
+    const cellule = document.createElement("div");
+    cellule.className = "timer-day";
+    cellule.textContent = jour;
+    entete.appendChild(cellule);
+  });
+
+  const heures = document.createElement("div");
+  heures.className = "timer-hours";
+
+  for (let h = 0; h < 24; h++) {
+    const ligne = document.createElement("div");
+    ligne.className = "timer-hour";
+    ligne.textContent =
+      String(h).padStart(2, "0") + ":00";
+    heures.appendChild(ligne);
+  }
+
+  corps.appendChild(heures);
+
+  jours.forEach(() => {
+    const colonne = document.createElement("div");
+    colonne.className = "timer-day-column";
+    corps.appendChild(colonne);
+  });
+
+  document.getElementById("timerStatus").textContent =
+    "Grille prête — connexion au programmateur à venir.";
+}
+
+initialiserGrilleHebdomadaire();
 
   chargerTemperatures();
 

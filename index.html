@@ -893,8 +893,6 @@ window.ecodanReceiveTimerData = function(reponse) {
     ".";
 };
 
-
-
 function initialiserGrilleHebdomadaire() {
   const jours = [
     "Lundi", "Mardi", "Mercredi", "Jeudi",
@@ -1035,13 +1033,6 @@ window.ecodanReceiveTimerData = function(reponse) {
       debut = finBloc;
     }
   });
-
-  document.getElementById("timerStatus").textContent =
-    evenements.length + " événements chargés depuis MELCloud — " +
-    (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
-    ".";
-};
-
 
   document.getElementById("timerStatus").textContent =
     evenements.length + " événements chargés depuis MELCloud — " +

@@ -8,46 +8,89 @@
   <title>Ecodan Pilotage</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 20px;
-      background: #111827;
-      color: #f3f4f6;
-      font-family: Arial, sans-serif;
-    }
-    main { max-width: 1000px; margin: auto; }
-    h1 { font-size: 26px; margin-bottom: 5px; }
-    .subtitle { color: #9ca3af; margin-bottom: 25px; }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-    .card, .panel {
-      background: #1f2937;
-      border: 1px solid #374151;
-      border-radius: 12px;
-      padding: 18px;
-    }
-    .label { color: #9ca3af; font-size: 14px; }
-    .value { font-size: 28px; font-weight: bold; margin-top: 9px; }
-    .unit { font-size: 15px; color: #9ca3af; }
-    .panel h2 { font-size: 18px; margin: 0 0 16px; }
-    .chart-placeholder {
-      min-height: 240px;
-      display: grid;
-      place-items: center;
-      color: #9ca3af;
-      text-align: center;
-      border: 1px dashed #4b5563;
-      border-radius: 8px;
-      padding: 20px;
-    }
-    .status { color: #9ca3af; font-size: 13px; margin-top: 18px; }
   
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: #111827;
+  color: #f3f4f6;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  max-width: 1000px;
+  margin: auto;
+}
+
+h1 {
+  font-size: 26px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: #9ca3af;
+  margin-bottom: 25px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.card,
+.panel {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.label {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 9px;
+}
+
+.unit {
+  font-size: 15px;
+  color: #9ca3af;
+}
+
+.panel h2 {
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+.chart-placeholder {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+  text-align: center;
+  border: 1px dashed #4b5563;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.status {
+  color: #9ca3af;
+  font-size: 13px;
+  margin-top: 18px;
+}
+
 /* Programmateur hebdomadaire */
+
 .timer-header {
   display: flex;
   justify-content: space-between;
@@ -73,16 +116,23 @@
   border-radius: 8px;
 }
 
+/* Calendrier : 24 colonnes horaires */
 
-/* Calendrier hebdomadaire horizontal */
 .timer-calendar {
-  min-width: 900px;
+  width: max-content;
+  min-width: 100%;
 }
 
 .timer-days {
   display: grid;
-  grid-template-columns: 85px repeat(24, minmax(0, 1fr));
-  width: 100%;
+  grid-template-columns: 85px repeat(24, 60px);
+  width: 1525px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #1f2937;
+  border-bottom: 1px solid #4b5563;
+}
 
 .timer-corner,
 .timer-hour {
@@ -98,15 +148,18 @@
   color: #e5e7eb;
 }
 
+/* Corps du calendrier */
+
 .timer-body {
-  display: grid;
-  grid-template-columns: 85px minmax(0, 1fr);
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 1525px;
 }
 
-.timer-day-column {
-  width: 100%;
-  min-width: 0;
+.timer-row {
+  display: grid;
+  grid-template-columns: 85px 1440px;
+  width: 1525px;
 }
 
 .timer-day {
@@ -114,7 +167,6 @@
   align-items: center;
   padding: 5px;
   min-height: 58px;
-  box-sizing: border-box;
   background: #1f2937;
   color: #e5e7eb;
   font-size: 12px;
@@ -122,40 +174,42 @@
   border-bottom: 1px solid #374151;
 }
 
+/* Ligne horaire de chaque jour */
+
 .timer-day-column {
+  width: 1440px;
   height: 58px;
+  min-width: 0;
   position: relative;
   border-bottom: 1px solid #374151;
   background:
     repeating-linear-gradient(
       to right,
       transparent 0,
-      transparent calc(100% / 24 - 1px),
-      #374151 calc(100% / 24 - 1px),
-      #374151 calc(100% / 24)
+      transparent 59px,
+      #374151 59px,
+      #374151 60px
     );
 }
 
+/* Événements programmés */
+
 .timer-event {
   position: absolute;
-  left: 3px;
-  right: auto;
   height: 30px;
-  box-sizing: border-box;
-  padding: 0 6px;
+  padding: 0 4px;
   border-radius: 5px;
   background: #287d58;
   color: white;
-  font-size: 12px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  gap: 3px;
   overflow: hidden;
 }
 
 .timer-event strong {
-  display: block;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -169,18 +223,19 @@
   background: #426a9d;
 }
 
-.timer-event strong {
-  display: block;
-  margin-bottom: 3px;
-}
-
 .timer-status {
   margin-top: 12px;
   color: #9ca3af;
   font-size: 13px;
 }
 
+/* Adaptation mobile */
+
 @media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
   .timer-header {
     align-items: flex-start;
     flex-direction: column;
@@ -701,6 +756,7 @@ script.src =
   }
 
 
+
 function initialiserGrilleHebdomadaire() {
   const jours = [
     "Lundi", "Mardi", "Mercredi", "Jeudi",
@@ -713,7 +769,7 @@ function initialiserGrilleHebdomadaire() {
   entete.innerHTML = "";
   corps.innerHTML = "";
 
-  // En-tête des heures
+  // En-tête : Jour + 24 heures
   const coin = document.createElement("div");
   coin.className = "timer-corner";
   coin.textContent = "Jour";
@@ -726,16 +782,21 @@ function initialiserGrilleHebdomadaire() {
     entete.appendChild(cellule);
   }
 
-  // Une ligne par jour
+  // Une ligne complète par jour
   jours.forEach(jour => {
+    const ligneJour = document.createElement("div");
+    ligneJour.className = "timer-row";
+
     const nomJour = document.createElement("div");
     nomJour.className = "timer-day";
     nomJour.textContent = jour;
-    corps.appendChild(nomJour);
 
     const ligne = document.createElement("div");
     ligne.className = "timer-day-column";
-    corps.appendChild(ligne);
+
+    ligneJour.appendChild(nomJour);
+    ligneJour.appendChild(ligne);
+    corps.appendChild(ligneJour);
   });
 
   document.getElementById("timerStatus").textContent =

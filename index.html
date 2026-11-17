@@ -1174,7 +1174,8 @@ async function enregistrerProgrammationHebdomadaire() {
     return;
   }
 
-  const timer = window.timerReponseActuelle;
+const reponse = window.timerReponseActuelle;
+const timer = reponse && reponse.timer;
 
   if (!timer || !Array.isArray(timer.Seasons)) {
     alert("Programmateur indisponible. Recharge les données MELCloud.");

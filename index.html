@@ -868,15 +868,17 @@ window.ecodanReceiveTimerData = function(reponse) {
       bloc.style.top = "50%";
       bloc.style.transform = "translateY(-50%)";
 
-      const heure = Math.floor(debutJour / 60);
-      const minute = debutJour % 60;
-
-      const titre = document.createElement("strong");
-      titre.textContent =
-        String(heure).padStart(2, "0") + ":" +
-        String(minute).padStart(2, "0");
-
+// Afficher l'heure et la température uniquement
+// sur le premier segment de l'événement
 if (debut === evenement.position) {
+  const heure = Math.floor(debutJour / 60);
+  const minute = debutJour % 60;
+
+  const titre = document.createElement("strong");
+  titre.textContent =
+    String(heure).padStart(2, "0") + ":" +
+    String(minute).padStart(2, "0");
+
   const valeur = document.createElement("span");
   valeur.textContent = evenement.temperature + " °C";
 

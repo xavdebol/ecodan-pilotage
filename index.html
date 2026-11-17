@@ -242,6 +242,39 @@ h1 {
   }
 }
 
+/* FORCER LA GRILLE : JOURS EN LIGNES, HEURES EN COLONNES */
+
+#timerDays {
+  display: grid !important;
+  grid-template-columns: 85px repeat(24, 60px) !important;
+  width: 1525px !important;
+}
+
+#timerBody {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 1525px !important;
+}
+
+#timerBody .timer-row {
+  display: grid !important;
+  grid-template-columns: 85px 1440px !important;
+  width: 1525px !important;
+}
+
+#timerBody .timer-day {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+#timerBody .timer-day-column {
+  grid-column: 2;
+  grid-row: 1;
+  width: 1440px !important;
+  height: 58px;
+  position: relative;
+}
+
   </style>
 </head>
 <body>

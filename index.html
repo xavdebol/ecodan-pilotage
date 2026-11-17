@@ -876,11 +876,13 @@ window.ecodanReceiveTimerData = function(reponse) {
         String(heure).padStart(2, "0") + ":" +
         String(minute).padStart(2, "0");
 
-      const valeur = document.createElement("span");
-      valeur.textContent = evenement.temperature + " °C";
+if (debut === evenement.position) {
+  const valeur = document.createElement("span");
+  valeur.textContent = evenement.temperature + " °C";
 
-      bloc.appendChild(titre);
-      bloc.appendChild(valeur);
+  bloc.appendChild(titre);
+  bloc.appendChild(valeur);
+}
       lignes[jour].appendChild(bloc);
 
       debut = finBloc;

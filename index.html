@@ -791,6 +791,7 @@ script.src =
 const URL_TIMER =
   "https://script.google.com/macros/s/AKfycbxcZchPwI2SSEEFWcLsCK-pWy-qEmjxz10T5IlHan78te6GzmdJAIllxQ2vy5MXiMGr/exec";
 
+
 window.ecodanReceiveTimerData = function(reponse) {
   if (!reponse || !reponse.success ||
       !reponse.timer || !reponse.timer.Seasons ||
@@ -802,57 +803,105 @@ window.ecodanReceiveTimerData = function(reponse) {
 
   const timer = reponse.timer;
   const evenements = timer.Seasons[0].Events || [];
-const lignes = document.querySelectorAll(".timer-day-column");
+  const lignes = document.querySelectorAll(".timer-day-column");
 
-// Effacer les anciens événements
-lignes.forEach(ligne => ligne.innerHTML = "");
+  // Effacer les anciens événements
+  lignes.forEach(ligne => ligne.innerHTML = "");
+
+  // Répartir les événements par jour
+  const jours = Array.from({length: 7}, () => []);
 
   evenements.forEach(evenement => {
-    // MELCloud : 0 = dimanche, 1 = lundi...
-    // Grille : 0 = lundi, 6 = dimanche
     const indexJour = (Number(evenement.EventDay) + 6) % 7;
-const ligne = lignes[indexJour];
+    const minutes =
+      Number(evenement.EventHour) * 60 +
+      Number(evenement.EventMinute || 0);
 
-if (!ligne) return;
+    jours[indexJour].push({
+      minutes: minutes,
+      heure: Number(evenement.EventHour),
+      minute: Number(evenement.EventMinute || 0),
+      temperature: evenement.SetTemperatureZone1
+    });
+  });
 
-    const heure = Number(evenement.EventHour);
-    const minute = Number(evenement.EventMinute || 0);
-    const position = heure * 60 + minute;
+  // Trier les événements de chaque journée
+  jours.forEach(jour => {
+    jour.sort((a, b) => a.minutes - b.minutes);
+  });
+
+  // Créer un bloc couvrant une période
+  function creerBloc(ligne, debut, fin, temperature) {
+    if (!ligne || fin <= debut) return;
 
     const bloc = document.createElement("div");
     bloc.className = "timer-event";
 
-    if (heure >= 17) {
+    if (Number(temperature) <= 18) {
       bloc.classList.add("evening");
     }
 
- const positionMinutes = heure * 60 + minute;
-bloc.style.left = (positionMinutes / 1440 * 100) + "%";
-bloc.style.width = (60 / 1440 * 100) + "%";
-bloc.style.top = "50%";
-bloc.style.transform = "translateY(-50%)";
+    bloc.style.left = (debut / 1440 * 100) + "%";
+    bloc.style.width = ((fin - debut) / 1440 * 100) + "%";
+    bloc.style.top = "50%";
+    bloc.style.transform = "translateY(-50%)";
 
     const heureTexte =
-      String(heure).padStart(2, "0") + ":" +
-      String(minute).padStart(2, "0");
+      String(Math.floor(debut / 60)).padStart(2, "0") + ":" +
+      String(debut % 60).padStart(2, "0");
 
     const titre = document.createElement("strong");
     titre.textContent = heureTexte;
 
-    const temperature = document.createElement("span");
-    temperature.textContent =
-      evenement.SetTemperatureZone1 + " °C";
+    const valeur = document.createElement("span");
+    valeur.textContent = temperature + " °C";
 
     bloc.appendChild(titre);
-    bloc.appendChild(temperature);
+    bloc.appendChild(valeur);
     ligne.appendChild(bloc);
-  });
+  }
+
+  // Construire les périodes de chaque journée
+  for (let j = 0; j < 7; j++) {
+    const ligne = lignes[j];
+    const evenementsJour = jours[j];
+    const jourPrecedent = jours[(j + 6) % 7];
+
+    if (!ligne || evenementsJour.length === 0) continue;
+
+    // Prolonger la dernière température du jour précédent
+    if (jourPrecedent.length > 0) {
+      const dernier = jourPrecedent[jourPrecedent.length - 1];
+
+      creerBloc(
+        ligne,
+        0,
+        evenementsJour[0].minutes,
+        dernier.temperature
+      );
+    }
+
+    // Étendre chaque événement jusqu'au suivant
+    evenementsJour.forEach((evenement, i) => {
+      const fin = i < evenementsJour.length - 1
+        ? evenementsJour[i + 1].minutes
+        : 1440;
+
+      creerBloc(
+        ligne,
+        evenement.minutes,
+        fin,
+        evenement.temperature
+      );
+    });
+  }
 
   document.getElementById("timerStatus").textContent =
     evenements.length + " événements chargés depuis MELCloud — " +
     (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
     ".";
 };
+
 
 function initialiserGrilleHebdomadaire() {
   const jours = [

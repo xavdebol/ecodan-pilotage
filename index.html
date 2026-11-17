@@ -1163,6 +1163,114 @@ chargerProgrammateur();
 
   // Actualisation toutes les 5 minutes
   setInterval(chargerTemperatures, 5 * 60 * 1000);
+
+async function enregistrerProgrammationHebdomadaire() {
+
+  const URL_ECRITURE_TIMER =
+    "https://script.google.com/macros/s/AKfycbyvdvsUrmhJefHjFVB08_j-W6aYZoVlH2e5htC9tSgFdtQN06TlAj7vwveS7dKCcCpiqQ/exec";
+
+  // Éviter deux enregistrements simultanés
+  if (window.timerEnregistrementEnCours) {
+    return;
+  }
+
+  const timer = window.timerReponseActuelle;
+
+  if (!timer || !Array.isArray(timer.Seasons)) {
+    alert("Programmateur indisponible. Recharge les données MELCloud.");
+    return;
+  }
+
+  // Vérification du nombre d'événements
+  const nombreEvenements = timer.Seasons.reduce(
+    (total, saison) => total + saison.Events.length,
+    0
+  );
+
+  if (nombreEvenements !== 14) {
+    alert(
+      "Enregistrement annulé : 14 événements attendus, " +
+      nombreEvenements + " trouvés."
+    );
+    return;
+  }
+
+  // Vérification des données principales
+  for (const saison of timer.Seasons) {
+    for (const evenement of saison.Events) {
+      if (
+        evenement.ID == null ||
+        evenement.EventDay == null ||
+        !evenement.EventTime ||
+        evenement.SetTemperatureZone1 == null ||
+        !evenement.Settings
+      ) {
+        alert("Un événement est incomplet. Enregistrement annulé.");
+        return;
+      }
+    }
+  }
+
+  // Préparation du programmateur complet
+  const donnees = {
+    Enabled: timer.Enabled,
+    Seasons: timer.Seasons
+  };
+
+  const requete = {
+    action: "enregistrerTimer",
+    timer: donnees
+  };
+
+  window.timerEnregistrementEnCours = true;
+
+  const indicateur = document.getElementById("timerPendingStatus");
+
+  if (indicateur) {
+    indicateur.textContent = "Transmission du programmateur...";
+  }
+
+  try {
+
+    await fetch(URL_ECRITURE_TIMER, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify(requete)
+    });
+
+    console.log(
+      "Programmateur transmis à Apps Script :",
+      donnees
+    );
+
+    if (indicateur) {
+      indicateur.textContent =
+        "Transmission envoyée — confirmation MELCloud à vérifier";
+    }
+
+    alert(
+      "La requête d'enregistrement a été transmise.\n\n" +
+      "La confirmation de MELCloud reste à vérifier par relecture."
+    );
+
+  } catch (erreur) {
+
+    console.error("Erreur de transmission du programmateur :", erreur);
+
+    if (indicateur) {
+      indicateur.textContent = "Erreur de transmission";
+    }
+
+    alert("Erreur lors de la transmission : " + erreur.message);
+
+  } finally {
+    window.timerEnregistrementEnCours = false;
+  }
+}
+
 </script>
 
 

@@ -960,6 +960,7 @@ window.ecodanReceiveTimerData = function(reponse) {
 
   const timer = reponse.timer;
   const evenements = timer.Seasons[0].Events || [];
+  console.log("ÉVÉNEMENTS MELCLOUD :", evenements);
   const lignes = document.querySelectorAll(".timer-day-column");
 
   lignes.forEach(ligne => ligne.innerHTML = "");

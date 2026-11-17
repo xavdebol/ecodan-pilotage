@@ -949,6 +949,7 @@ function initialiserGrilleHebdomadaire() {
     "Grille prête — connexion au programmateur...";
 }
 
+
 window.ecodanReceiveTimerData = function(reponse) {
   if (!reponse || !reponse.success ||
       !reponse.timer || !reponse.timer.Seasons ||
@@ -960,49 +961,95 @@ window.ecodanReceiveTimerData = function(reponse) {
 
   const timer = reponse.timer;
   const evenements = timer.Seasons[0].Events || [];
-  console.log("ÉVÉNEMENTS MELCLOUD :", evenements);
   const lignes = document.querySelectorAll(".timer-day-column");
 
+  // Nettoyage de la grille
   lignes.forEach(ligne => ligne.innerHTML = "");
 
-  evenements.forEach(evenement => {
-    // MELCloud : dimanche = 0, lundi = 1...
-    const indexJour = (Number(evenement.EventDay) + 6) % 7;
-    const ligne = lignes[indexJour];
+  if (lignes.length !== 7 || evenements.length === 0) {
+    document.getElementById("timerStatus").textContent =
+      "Aucun événement ou grille hebdomadaire incorrecte.";
+    return;
+  }
 
-    if (!ligne) return;
+  // Conversion des événements en minutes dans la semaine.
+  // La semaine commence le lundi.
+  const semaine = 7 * 1440;
 
+  const liste = evenements.map(evenement => {
+    const jour = (Number(evenement.EventDay) + 6) % 7;
     const heure = Number(evenement.EventHour);
     const minute = Number(evenement.EventMinute || 0);
 
-    const bloc = document.createElement("div");
-    bloc.className = "timer-event";
+    return {
+      position: jour * 1440 + heure * 60 + minute,
+      temperature: evenement.SetTemperatureZone1
+    };
+  }).sort((a, b) => a.position - b.position);
 
-    if (heure >= 17) {
-      bloc.classList.add("evening");
+  console.log("ÉVÉNEMENTS MELCLOUD :", liste);
+
+  // Chaque consigne reste active jusqu'au prochain événement.
+  liste.forEach((evenement, index) => {
+    const suivant = liste[(index + 1) % liste.length];
+
+    let debut = evenement.position;
+    let fin = suivant.position;
+
+    // Dernier événement de la semaine :
+    // prolongation jusqu'au premier événement de la semaine suivante.
+    if (index === liste.length - 1) {
+      fin += semaine;
     }
 
-    // Positionnement par quarts d'heure
-    const positionMinutes =
-      Math.round((heure * 60 + minute) / 15) * 15;
+    // Découpage des blocs au passage de minuit.
+    while (debut < fin) {
+      const jour = Math.floor(debut / 1440) % 7;
+      const debutJour = debut % 1440;
+      const finBloc = Math.min(
+        fin,
+        (Math.floor(debut / 1440) + 1) * 1440
+      );
 
-    bloc.style.left = (positionMinutes / 1440 * 100) + "%";
-    bloc.style.top = "50%";
-    bloc.style.transform = "translateY(-50%)";
+      const duree = finBloc - debut;
 
-    const titre = document.createElement("strong");
-    titre.textContent =
-      String(heure).padStart(2, "0") + ":" +
-      String(minute).padStart(2, "0");
+      const bloc = document.createElement("div");
+      bloc.className = "timer-event";
 
-    const temperature = document.createElement("span");
-    temperature.textContent =
-      evenement.SetTemperatureZone1 + " °C";
+      if (Number(evenement.temperature) <= 18) {
+        bloc.classList.add("evening");
+      }
 
-    bloc.appendChild(titre);
-    bloc.appendChild(temperature);
-    ligne.appendChild(bloc);
+      bloc.style.left = (debutJour / 1440 * 100) + "%";
+      bloc.style.width = (duree / 1440 * 100) + "%";
+      bloc.style.top = "50%";
+      bloc.style.transform = "translateY(-50%)";
+
+      const heure = Math.floor(debutJour / 60);
+      const minute = debutJour % 60;
+
+      const titre = document.createElement("strong");
+      titre.textContent =
+        String(heure).padStart(2, "0") + ":" +
+        String(minute).padStart(2, "0");
+
+      const valeur = document.createElement("span");
+      valeur.textContent = evenement.temperature + " °C";
+
+      bloc.appendChild(titre);
+      bloc.appendChild(valeur);
+      lignes[jour].appendChild(bloc);
+
+      debut = finBloc;
+    }
   });
+
+  document.getElementById("timerStatus").textContent =
+    evenements.length + " événements chargés depuis MELCloud — " +
+    (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
+    ".";
+};
+
 
   document.getElementById("timerStatus").textContent =
     evenements.length + " événements chargés depuis MELCloud — " +

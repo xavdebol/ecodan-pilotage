@@ -82,12 +82,7 @@
 .timer-days {
   display: grid;
   grid-template-columns: 85px repeat(24, minmax(0, 1fr));
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: #1f2937;
-  border-bottom: 1px solid #4b5563;
-}
+  width: 100%;
 
 .timer-corner,
 .timer-hour {
@@ -106,6 +101,12 @@
 .timer-body {
   display: grid;
   grid-template-columns: 85px minmax(0, 1fr);
+  width: 100%;
+}
+
+.timer-day-column {
+  width: 100%;
+  min-width: 0;
 }
 
 .timer-day {

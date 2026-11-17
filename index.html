@@ -99,6 +99,37 @@ h1 {
   margin-bottom: 16px;
 }
 
+.timer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#btnTimerEnabled {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#btnTimerEnabled.off {
+  background: #dc3545;
+}
+
+#btnEnregistrerTimer {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .timer-header h2 {
   margin: 0 0 5px;
 }
@@ -436,20 +467,33 @@ h1 {
 </section>
 
 <section class="panel" id="timerPanel">
-  <div class="timer-header">
-    <div>
-      <h2>Programmation hebdomadaire</h2>
-      <div class="timer-description">
-        Planning chauffage synchronisé avec MELCloud
-      </div>
-      <div id="timerPendingStatus" class="timer-pending">
-        Aucune modification en attente
+
+<div class="timer-header">
+  <div>
+    <h2>Programmation hebdomadaire</h2>
+    <div class="timer-description">
+      Planning chauffage synchronisé avec MELCloud
     </div>
+    <div id="timerPendingStatus" class="timer-pending">
+      Aucune modification en attente
     </div>
+  </div>
+
+  <div class="timer-actions">
+    <button id="btnTimerEnabled" type="button">
+      Programmation : ON
+    </button>
+
+    <button id="btnEnregistrerTimer" type="button">
+      Enregistrer vers MELCloud
+    </button>
+
     <button id="btnActualiserTimer" type="button">
       Actualiser
     </button>
   </div>
+</div>
+
 
   
 <div id="timerEditModal" class="timer-modal" style="display:none;">
@@ -955,6 +999,19 @@ window.ecodanReceiveTimerData = function(reponse) {
     return;
   }
   window.timerReponseActuelle = reponse;
+  
+const boutonTimer = document.getElementById("btnTimerEnabled");
+
+if (boutonTimer) {
+  const actif = reponse.timer.Enabled === true;
+
+  boutonTimer.textContent = actif
+    ? "Programmation : ON"
+    : "Programmation : OFF";
+
+  boutonTimer.classList.toggle("off", !actif);
+}
+
   const timer = reponse.timer;
   const evenements = timer.Seasons[0].Events || [];
   const lignes = document.querySelectorAll(".timer-day-column");
@@ -1270,7 +1327,42 @@ const timer = reponse && reponse.timer;
   } finally {
     window.timerEnregistrementEnCours = false;
   }
-}
+  
+document.getElementById("btnTimerEnabled").addEventListener("click", function() {
+
+  const reponse = window.timerReponseActuelle;
+  const timer = reponse && reponse.timer;
+
+  if (!timer) {
+    alert("Programmateur non chargé. Actualise les données MELCloud.");
+    return;
+  }
+
+  // Inversion de l'état local
+  timer.Enabled = !timer.Enabled;
+
+  // Actualisation du bouton
+  const actif = timer.Enabled === true;
+
+  this.textContent = actif
+    ? "Programmation : ON"
+    : "Programmation : OFF";
+
+  this.classList.toggle("off", !actif);
+
+  const indicateur = document.getElementById("timerPendingStatus");
+
+  if (indicateur) {
+    indicateur.textContent =
+      "État de programmation modifié — à enregistrer";
+  }
+
+  console.log("Nouvel état local du programmateur :", timer.Enabled);
+});
+// Branchement du bouton d'enregistrement
+document.getElementById("btnEnregistrerTimer").addEventListener("click", function() {
+  enregistrerProgrammationHebdomadaire();
+});
 
 </script>
 

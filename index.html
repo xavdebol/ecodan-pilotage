@@ -928,7 +928,9 @@ function initialiserGrilleHebdomadaire() {
     "Grille prête — connexion au programmateur...";
 }
 
-
+window.timerModificationsEnAttente =
+  window.timerModificationsEnAttente || [];
+  
 window.ecodanReceiveTimerData = function(reponse) {
   if (!reponse || !reponse.success ||
       !reponse.timer || !reponse.timer.Seasons ||

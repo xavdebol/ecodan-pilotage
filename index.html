@@ -1100,6 +1100,9 @@ document.getElementById("timerEditValidate").onclick = function() {
   // Modification de l'événement MELCloud d'origine
   evenement.source.EventHour = Number(morceaux[0]);
   evenement.source.EventMinute = Number(morceaux[1]);
+  evenement.source.EventTime =
+  morceaux[0].padStart(2, "0") + ":" +
+  morceaux[1].padStart(2, "0") + ":00";
   evenement.source.SetTemperatureZone1 = temperature;
 evenement.source.Settings = evenement.source.Settings.replace(
   /<t1>.*?<\/t1>/,

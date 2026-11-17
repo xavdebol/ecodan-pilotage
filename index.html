@@ -788,99 +788,8 @@ script.src =
     document.body.appendChild(script);
   }
 
-
-
-function initialiserGrilleHebdomadaire() {
-  const jours = [
-    "Lundi", "Mardi", "Mercredi", "Jeudi",
-    "Vendredi", "Samedi", "Dimanche"
-  ];
-
-  const entete = document.getElementById("timerDays");
-  const corps = document.getElementById("timerBody");
-
-  entete.innerHTML = "";
-  corps.innerHTML = "";
-
-  // En-tête : Jour + 24 heures
-  const coin = document.createElement("div");
-  coin.className = "timer-corner";
-  coin.textContent = "Jour";
-  entete.appendChild(coin);
-
-  for (let h = 0; h < 24; h++) {
-    const cellule = document.createElement("div");
-    cellule.className = "timer-hour";
-    cellule.textContent = String(h).padStart(2, "0") + "h";
-    entete.appendChild(cellule);
-  }
-
-  // Une ligne complète par jour
-  jours.forEach(jour => {
-    const ligneJour = document.createElement("div");
-    ligneJour.className = "timer-row";
-
-    const nomJour = document.createElement("div");
-    nomJour.className = "timer-day";
-    nomJour.textContent = jour;
-
-    const ligne = document.createElement("div");
-    ligne.className = "timer-day-column";
-
-    ligneJour.appendChild(nomJour);
-    ligneJour.appendChild(ligne);
-    corps.appendChild(ligneJour);
-  });
-
-  document.getElementById("timerStatus").textContent =
-    "Grille prête — connexion au programmateur...";
-}
-
-
-
 const URL_TIMER =
   "https://script.google.com/macros/s/AKfycbxcZchPwI2SSEEFWcLsCK-pWy-qEmjxz10T5IlHan78te6GzmdJAIllxQ2vy5MXiMGr/exec";
-
-function initialiserGrilleHebdomadaire() {
-  const jours = [
-    "Lundi", "Mardi", "Mercredi", "Jeudi",
-    "Vendredi", "Samedi", "Dimanche"
-  ];
-
-  const entete = document.getElementById("timerDays");
-  const corps = document.getElementById("timerBody");
-
-  entete.innerHTML = '<div class="timer-corner">Heure</div>';
-  corps.innerHTML = "";
-
-  jours.forEach(jour => {
-    const cellule = document.createElement("div");
-    cellule.className = "timer-day";
-    cellule.textContent = jour;
-    entete.appendChild(cellule);
-  });
-
-  const heures = document.createElement("div");
-  heures.className = "timer-hours";
-
-  for (let h = 0; h < 24; h++) {
-    const ligne = document.createElement("div");
-    ligne.className = "timer-hour";
-    ligne.textContent = String(h).padStart(2, "0") + ":00";
-    heures.appendChild(ligne);
-  }
-
-  corps.appendChild(heures);
-
-  jours.forEach(() => {
-    const colonne = document.createElement("div");
-    colonne.className = "timer-day-column";
-    corps.appendChild(colonne);
-  });
-
-  document.getElementById("timerStatus").textContent =
-    "Chargement du programmateur MELCloud...";
-}
 
 window.ecodanReceiveTimerData = function(reponse) {
   if (!reponse || !reponse.success ||
@@ -945,6 +854,117 @@ bloc.style.transform = "translateY(-50%)";
     ".";
 };
 
+
+const URL_TIMER =
+  "https://script.google.com/macros/s/AKfycbxcZchPwI2SSEEFWcLsCK-pWy-qEmjxz10T5IlHan78te6GzmdJAIllxQ2vy5MXiMGr/exec";
+
+function initialiserGrilleHebdomadaire() {
+  const jours = [
+    "Lundi", "Mardi", "Mercredi", "Jeudi",
+    "Vendredi", "Samedi", "Dimanche"
+  ];
+
+  const entete = document.getElementById("timerDays");
+  const corps = document.getElementById("timerBody");
+
+  entete.innerHTML = "";
+  corps.innerHTML = "";
+
+  // En-tête : jours en première colonne, heures ensuite
+  const coin = document.createElement("div");
+  coin.className = "timer-corner";
+  coin.textContent = "Jour";
+  entete.appendChild(coin);
+
+  for (let h = 0; h < 24; h++) {
+    const cellule = document.createElement("div");
+    cellule.className = "timer-hour";
+    cellule.textContent = String(h).padStart(2, "0") + "h";
+    entete.appendChild(cellule);
+  }
+
+  // Sept lignes : une par jour
+  jours.forEach(jour => {
+    const ligneJour = document.createElement("div");
+    ligneJour.className = "timer-row";
+
+    const nomJour = document.createElement("div");
+    nomJour.className = "timer-day";
+    nomJour.textContent = jour;
+
+    const ligne = document.createElement("div");
+    ligne.className = "timer-day-column";
+
+    ligneJour.appendChild(nomJour);
+    ligneJour.appendChild(ligne);
+    corps.appendChild(ligneJour);
+  });
+
+  document.getElementById("timerStatus").textContent =
+    "Grille prête — connexion au programmateur...";
+}
+
+window.ecodanReceiveTimerData = function(reponse) {
+  if (!reponse || !reponse.success ||
+      !reponse.timer || !reponse.timer.Seasons ||
+      !reponse.timer.Seasons.length) {
+    document.getElementById("timerStatus").textContent =
+      "Erreur : lecture du programmateur impossible.";
+    return;
+  }
+
+  const timer = reponse.timer;
+  const evenements = timer.Seasons[0].Events || [];
+  const lignes = document.querySelectorAll(".timer-day-column");
+
+  lignes.forEach(ligne => ligne.innerHTML = "");
+
+  evenements.forEach(evenement => {
+    // MELCloud : dimanche = 0, lundi = 1...
+    const indexJour = (Number(evenement.EventDay) + 6) % 7;
+    const ligne = lignes[indexJour];
+
+    if (!ligne) return;
+
+    const heure = Number(evenement.EventHour);
+    const minute = Number(evenement.EventMinute || 0);
+
+    const bloc = document.createElement("div");
+    bloc.className = "timer-event";
+
+    if (heure >= 17) {
+      bloc.classList.add("evening");
+    }
+
+    // Positionnement par quarts d'heure
+    const positionMinutes =
+      Math.round((heure * 60 + minute) / 15) * 15;
+
+    bloc.style.left = (positionMinutes / 1440 * 100) + "%";
+    bloc.style.width = (60 / 1440 * 100) + "%";
+    bloc.style.top = "50%";
+    bloc.style.transform = "translateY(-50%)";
+
+    const titre = document.createElement("strong");
+    titre.textContent =
+      String(heure).padStart(2, "0") + ":" +
+      String(minute).padStart(2, "0");
+
+    const temperature = document.createElement("span");
+    temperature.textContent =
+      evenement.SetTemperatureZone1 + " °C";
+
+    bloc.appendChild(titre);
+    bloc.appendChild(temperature);
+    ligne.appendChild(bloc);
+  });
+
+  document.getElementById("timerStatus").textContent =
+    evenements.length + " événements chargés depuis MELCloud — " +
+    (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
+    ".";
+};
+
 function chargerProgrammateur() {
   document.getElementById("timerStatus").textContent =
     "Actualisation depuis MELCloud...";
@@ -966,6 +986,7 @@ function chargerProgrammateur() {
 
   document.body.appendChild(script);
 }
+
 
 initialiserGrilleHebdomadaire();
 

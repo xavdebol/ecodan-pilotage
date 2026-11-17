@@ -1062,7 +1062,8 @@ document.getElementById("timerEditCancel").onclick = function() {
   window.timerEvenementEnCours = null;
 };
 
-// Bouton Valider
+
+ // Bouton Valider
 document.getElementById("timerEditValidate").onclick = function() {
   const evenement = window.timerEvenementEnCours;
 
@@ -1086,6 +1087,16 @@ document.getElementById("timerEditValidate").onclick = function() {
   evenement.source.EventMinute = Number(morceaux[1]);
   evenement.source.SetTemperatureZone1 = temperature;
 
+  // Ajout à la liste des modifications en attente
+  if (!window.timerModificationsEnAttente.includes(evenement.source)) {
+    window.timerModificationsEnAttente.push(evenement.source);
+  }
+
+  console.log(
+    "MODIFICATIONS EN ATTENTE :",
+    window.timerModificationsEnAttente
+  );
+
   // Fermeture de la fenêtre
   document.getElementById("timerEditModal").style.display = "none";
   window.timerEvenementEnCours = null;
@@ -1094,6 +1105,7 @@ document.getElementById("timerEditValidate").onclick = function() {
   window.ecodanReceiveTimerData(window.timerReponseActuelle);
 };
 };
+
 
 
 function chargerProgrammateur() {

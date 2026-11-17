@@ -73,13 +73,15 @@
   border-radius: 8px;
 }
 
+
+/* Calendrier hebdomadaire horizontal */
 .timer-calendar {
-  min-width: 950px;
+  min-width: 900px;
 }
 
 .timer-days {
   display: grid;
-  grid-template-columns: 64px repeat(7, minmax(120px, 1fr));
+  grid-template-columns: 85px repeat(24, minmax(0, 1fr));
   position: sticky;
   top: 0;
   z-index: 5;
@@ -88,61 +90,78 @@
 }
 
 .timer-corner,
-.timer-day {
-  padding: 12px 5px;
+.timer-hour {
+  padding: 8px 2px;
   text-align: center;
-  font-size: 13px;
-  font-weight: bold;
+  color: #9ca3af;
+  font-size: 10px;
   border-right: 1px solid #374151;
 }
 
-.timer-day {
+.timer-corner {
+  font-weight: bold;
   color: #e5e7eb;
 }
 
 .timer-body {
   display: grid;
-  grid-template-columns: 64px repeat(7, minmax(120px, 1fr));
+  grid-template-columns: 85px minmax(0, 1fr);
 }
 
-.timer-hours {
+.timer-day {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  min-height: 58px;
+  box-sizing: border-box;
   background: #1f2937;
-}
-
-.timer-hour {
-  height: 60px;
-  padding: 3px 7px;
-  text-align: right;
-  color: #9ca3af;
-  font-size: 11px;
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: bold;
   border-bottom: 1px solid #374151;
 }
 
 .timer-day-column {
-  height: 1440px;
+  height: 58px;
   position: relative;
-  border-right: 1px solid #374151;
+  border-bottom: 1px solid #374151;
   background:
     repeating-linear-gradient(
-      to bottom,
+      to right,
       transparent 0,
-      transparent 59px,
-      #374151 59px,
-      #374151 60px
+      transparent calc(100% / 24 - 1px),
+      #374151 calc(100% / 24 - 1px),
+      #374151 calc(100% / 24)
     );
 }
 
 .timer-event {
   position: absolute;
   left: 3px;
-  right: 3px;
-  min-height: 42px;
-  padding: 5px;
+  right: auto;
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 6px;
   border-radius: 5px;
   background: #287d58;
   color: white;
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
   overflow: hidden;
+}
+
+.timer-event strong {
+  display: block;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.timer-event span {
+  white-space: nowrap;
+  font-weight: 600;
 }
 
 .timer-event.evening {
@@ -680,6 +699,7 @@ script.src =
     document.body.appendChild(script);
   }
 
+
 function initialiserGrilleHebdomadaire() {
   const jours = [
     "Lundi", "Mardi", "Mercredi", "Jeudi",
@@ -689,38 +709,38 @@ function initialiserGrilleHebdomadaire() {
   const entete = document.getElementById("timerDays");
   const corps = document.getElementById("timerBody");
 
-  entete.innerHTML = '<div class="timer-corner">Heure</div>';
+  entete.innerHTML = "";
   corps.innerHTML = "";
 
-  jours.forEach(jour => {
-    const cellule = document.createElement("div");
-    cellule.className = "timer-day";
-    cellule.textContent = jour;
-    entete.appendChild(cellule);
-  });
-
-  const heures = document.createElement("div");
-  heures.className = "timer-hours";
+  // En-tête des heures
+  const coin = document.createElement("div");
+  coin.className = "timer-corner";
+  coin.textContent = "Jour";
+  entete.appendChild(coin);
 
   for (let h = 0; h < 24; h++) {
-    const ligne = document.createElement("div");
-    ligne.className = "timer-hour";
-    ligne.textContent =
-      String(h).padStart(2, "0") + ":00";
-    heures.appendChild(ligne);
+    const cellule = document.createElement("div");
+    cellule.className = "timer-hour";
+    cellule.textContent = String(h).padStart(2, "0") + "h";
+    entete.appendChild(cellule);
   }
 
-  corps.appendChild(heures);
+  // Une ligne par jour
+  jours.forEach(jour => {
+    const nomJour = document.createElement("div");
+    nomJour.className = "timer-day";
+    nomJour.textContent = jour;
+    corps.appendChild(nomJour);
 
-  jours.forEach(() => {
-    const colonne = document.createElement("div");
-    colonne.className = "timer-day-column";
-    corps.appendChild(colonne);
+    const ligne = document.createElement("div");
+    ligne.className = "timer-day-column";
+    corps.appendChild(ligne);
   });
 
   document.getElementById("timerStatus").textContent =
-    "Grille prête — connexion au programmateur à venir.";
+    "Grille prête — connexion au programmateur...";
 }
+
 
 
 const URL_TIMER =
@@ -778,18 +798,18 @@ window.ecodanReceiveTimerData = function(reponse) {
 
   const timer = reponse.timer;
   const evenements = timer.Seasons[0].Events || [];
-  const colonnes = document.querySelectorAll(".timer-day-column");
+const lignes = document.querySelectorAll(".timer-day-column");
 
-  // Effacer les anciens événements
-  colonnes.forEach(colonne => colonne.innerHTML = "");
+// Effacer les anciens événements
+lignes.forEach(ligne => ligne.innerHTML = "");
 
   evenements.forEach(evenement => {
     // MELCloud : 0 = dimanche, 1 = lundi...
     // Grille : 0 = lundi, 6 = dimanche
     const indexJour = (Number(evenement.EventDay) + 6) % 7;
-    const colonne = colonnes[indexJour];
+const ligne = lignes[indexJour];
 
-    if (!colonne) return;
+if (!ligne) return;
 
     const heure = Number(evenement.EventHour);
     const minute = Number(evenement.EventMinute || 0);
@@ -802,7 +822,11 @@ window.ecodanReceiveTimerData = function(reponse) {
       bloc.classList.add("evening");
     }
 
-    bloc.style.top = position + "px";
+ const positionMinutes = heure * 60 + minute;
+bloc.style.left = (positionMinutes / 1440 * 100) + "%";
+bloc.style.width = (60 / 1440 * 100) + "%";
+bloc.style.top = "50%";
+bloc.style.transform = "translateY(-50%)";
 
     const heureTexte =
       String(heure).padStart(2, "0") + ":" +
@@ -817,7 +841,7 @@ window.ecodanReceiveTimerData = function(reponse) {
 
     bloc.appendChild(titre);
     bloc.appendChild(temperature);
-    colonne.appendChild(bloc);
+    ligne.appendChild(bloc);
   });
 
   document.getElementById("timerStatus").textContent =

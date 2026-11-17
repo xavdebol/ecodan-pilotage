@@ -934,6 +934,18 @@ function initialiserGrilleHebdomadaire() {
 window.timerModificationsEnAttente =
   window.timerModificationsEnAttente || [];
   
+  function actualiserCompteurModifications() {
+  const nombre = window.timerModificationsEnAttente.length;
+  const indicateur = document.getElementById("timerPendingStatus");
+
+  if (!indicateur) return;
+
+  indicateur.textContent = nombre === 0
+    ? "Aucune modification en attente"
+    : nombre + (nombre > 1
+        ? " modifications en attente"
+        : " modification en attente");
+}
 window.ecodanReceiveTimerData = function(reponse) {
   if (!reponse || !reponse.success ||
       !reponse.timer || !reponse.timer.Seasons ||
@@ -1094,7 +1106,7 @@ document.getElementById("timerEditValidate").onclick = function() {
   if (!window.timerModificationsEnAttente.includes(evenement.source)) {
     window.timerModificationsEnAttente.push(evenement.source);
   }
-
+actualiserCompteurModifications();
   console.log(
     "MODIFICATIONS EN ATTENTE :",
     window.timerModificationsEnAttente

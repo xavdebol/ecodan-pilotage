@@ -229,6 +229,74 @@ h1 {
   font-size: 13px;
 }
 
+/* Fenêtre de modification des événements */
+
+.timer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-modal-content {
+  width: 300px;
+  padding: 22px;
+  border-radius: 10px;
+  background: #1f2937;
+  color: white;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.timer-modal-content h3 {
+  margin: 0 0 20px;
+  font-size: 17px;
+}
+
+.timer-modal-content label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 13px;
+}
+
+.timer-modal-content input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #4b5563;
+  border-radius: 5px;
+  background: #374151;
+  color: white;
+  font-size: 16px;
+}
+
+.timer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.timer-modal-actions button {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#timerEditCancel {
+  background: #4b5563;
+  color: white;
+}
+
+#timerEditValidate {
+  background: #287d58;
+  color: white;
+}
+
 /* Adaptation mobile */
 
 @media (max-width: 600px) {
@@ -379,6 +447,25 @@ h1 {
       Actualiser
     </button>
   </div>
+
+  
+<div id="timerEditModal" class="timer-modal" style="display:none;">
+  <div class="timer-modal-content">
+    <h3>Modifier la programmation</h3>
+
+    <label for="timerEditTime">Heure de début</label>
+    <input type="time" id="timerEditTime" step="900">
+
+    <label for="timerEditTemperature">Température (°C)</label>
+    <input type="number" id="timerEditTemperature"
+           min="5" max="30" step="0.5">
+
+    <div class="timer-modal-actions">
+      <button type="button" id="timerEditCancel">Annuler</button>
+      <button type="button" id="timerEditValidate">Valider</button>
+    </div>
+  </div>
+</div>
 
   <div class="timer-scroll">
     <div class="timer-calendar">
@@ -850,7 +937,7 @@ window.ecodanReceiveTimerData = function(reponse) {
       "Erreur : lecture du programmateur impossible.";
     return;
   }
-
+  window.timerReponseActuelle = reponse;
   const timer = reponse.timer;
   const evenements = timer.Seasons[0].Events || [];
   const lignes = document.querySelectorAll(".timer-day-column");
@@ -873,10 +960,11 @@ window.ecodanReceiveTimerData = function(reponse) {
     const heure = Number(evenement.EventHour);
     const minute = Number(evenement.EventMinute || 0);
 
-    return {
-      position: jour * 1440 + heure * 60 + minute,
-      temperature: evenement.SetTemperatureZone1
-    };
+return {
+  position: jour * 1440 + heure * 60 + minute,
+  temperature: evenement.SetTemperatureZone1,
+  source: evenement
+};
   }).sort((a, b) => a.position - b.position);
 
   console.log("ÉVÉNEMENTS MELCLOUD :", liste);
@@ -923,6 +1011,23 @@ window.ecodanReceiveTimerData = function(reponse) {
 // Identifiant commun aux segments d'une même consigne
 bloc.dataset.eventPosition = evenement.position;
 
+bloc.style.cursor = "pointer";
+
+bloc.addEventListener("click", function() {
+  window.timerEvenementEnCours = evenement;
+
+  const heure = String(evenement.source.EventHour).padStart(2, "0");
+  const minute = String(evenement.source.EventMinute || 0).padStart(2, "0");
+
+  document.getElementById("timerEditTime").value =
+    heure + ":" + minute;
+
+  document.getElementById("timerEditTemperature").value =
+    evenement.source.SetTemperatureZone1;
+
+  document.getElementById("timerEditModal").style.display = "flex";
+});
+
 // Afficher les informations uniquement sur le premier segment
 if (debut === evenement.position) {
   const titre = document.createElement("strong");
@@ -943,11 +1048,51 @@ lignes[jour].appendChild(bloc);
     }
   });
 
-  document.getElementById("timerStatus").textContent =
-    evenements.length + " événements chargés depuis MELCloud — " +
-    (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
-    ".";
+
+document.getElementById("timerStatus").textContent =
+  evenements.length + " événements chargés depuis MELCloud — " +
+  (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
+  ".";
+
+// Bouton Annuler
+document.getElementById("timerEditCancel").onclick = function() {
+  document.getElementById("timerEditModal").style.display = "none";
+  window.timerEvenementEnCours = null;
 };
+
+// Bouton Valider
+document.getElementById("timerEditValidate").onclick = function() {
+  const evenement = window.timerEvenementEnCours;
+
+  if (!evenement) return;
+
+  const heureSaisie = document.getElementById("timerEditTime").value;
+  const temperature = Number(
+    document.getElementById("timerEditTemperature").value
+  );
+
+  if (!heureSaisie || !Number.isFinite(temperature) ||
+      temperature < 5 || temperature > 30) {
+    alert("Vérifie l'heure et la température saisies.");
+    return;
+  }
+
+  const morceaux = heureSaisie.split(":");
+
+  // Modification de l'événement MELCloud d'origine
+  evenement.source.EventHour = Number(morceaux[0]);
+  evenement.source.EventMinute = Number(morceaux[1]);
+  evenement.source.SetTemperatureZone1 = temperature;
+
+  // Fermeture de la fenêtre
+  document.getElementById("timerEditModal").style.display = "none";
+  window.timerEvenementEnCours = null;
+
+  // Actualisation de la grille, sans envoi à la PAC
+  window.ecodanReceiveTimerData(window.timerReponseActuelle);
+};
+};
+
 
 function chargerProgrammateur() {
   document.getElementById("timerStatus").textContent =

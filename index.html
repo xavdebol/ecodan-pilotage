@@ -1327,7 +1327,9 @@ const timer = reponse && reponse.timer;
   } finally {
     window.timerEnregistrementEnCours = false;
   }
+} // FIN DE enregistrerProgrammationHebdomadaire()
   
+// Branchement du bouton ON/OFF
 document.getElementById("btnTimerEnabled").addEventListener("click", function() {
 
   const reponse = window.timerReponseActuelle;

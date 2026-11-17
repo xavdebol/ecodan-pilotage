@@ -792,6 +792,7 @@ const URL_TIMER =
   "https://script.google.com/macros/s/AKfycbxcZchPwI2SSEEFWcLsCK-pWy-qEmjxz10T5IlHan78te6GzmdJAIllxQ2vy5MXiMGr/exec";
 
 
+
 window.ecodanReceiveTimerData = function(reponse) {
   if (!reponse || !reponse.success ||
       !reponse.timer || !reponse.timer.Seasons ||
@@ -805,102 +806,93 @@ window.ecodanReceiveTimerData = function(reponse) {
   const evenements = timer.Seasons[0].Events || [];
   const lignes = document.querySelectorAll(".timer-day-column");
 
-  // Effacer les anciens événements
+  // Nettoyage de la grille
   lignes.forEach(ligne => ligne.innerHTML = "");
 
-  // Répartir les événements par jour
-  const jours = Array.from({length: 7}, () => []);
+  if (lignes.length !== 7 || evenements.length === 0) {
+    document.getElementById("timerStatus").textContent =
+      "Aucun événement ou grille hebdomadaire incorrecte.";
+    return;
+  }
 
-  evenements.forEach(evenement => {
-    const indexJour = (Number(evenement.EventDay) + 6) % 7;
-    const minutes =
-      Number(evenement.EventHour) * 60 +
-      Number(evenement.EventMinute || 0);
+  // Conversion des événements en minutes dans la semaine.
+  // La semaine commence le lundi.
+  const semaine = 7 * 1440;
 
-    jours[indexJour].push({
-      minutes: minutes,
-      heure: Number(evenement.EventHour),
-      minute: Number(evenement.EventMinute || 0),
+  const liste = evenements.map(evenement => {
+    const jour = (Number(evenement.EventDay) + 6) % 7;
+    const heure = Number(evenement.EventHour);
+    const minute = Number(evenement.EventMinute || 0);
+
+    return {
+      position: jour * 1440 + heure * 60 + minute,
       temperature: evenement.SetTemperatureZone1
-    });
-  });
+    };
+  }).sort((a, b) => a.position - b.position);
 
-  // Trier les événements de chaque journée
-  jours.forEach(jour => {
-    jour.sort((a, b) => a.minutes - b.minutes);
-  });
+  console.log("ÉVÉNEMENTS MELCLOUD :", liste);
 
-  // Créer un bloc couvrant une période
-  function creerBloc(ligne, debut, fin, temperature) {
-    if (!ligne || fin <= debut) return;
+  // Chaque consigne reste active jusqu'au prochain événement.
+  liste.forEach((evenement, index) => {
+    const suivant = liste[(index + 1) % liste.length];
 
-    const bloc = document.createElement("div");
-    bloc.className = "timer-event";
+    let debut = evenement.position;
+    let fin = suivant.position;
 
-    if (Number(temperature) <= 18) {
-      bloc.classList.add("evening");
+    // Dernier événement de la semaine :
+    // prolongation jusqu'au premier événement de la semaine suivante.
+    if (index === liste.length - 1) {
+      fin += semaine;
     }
 
-    bloc.style.left = (debut / 1440 * 100) + "%";
-    bloc.style.width = ((fin - debut) / 1440 * 100) + "%";
-    bloc.style.top = "50%";
-    bloc.style.transform = "translateY(-50%)";
-
-    const heureTexte =
-      String(Math.floor(debut / 60)).padStart(2, "0") + ":" +
-      String(debut % 60).padStart(2, "0");
-
-    const titre = document.createElement("strong");
-    titre.textContent = heureTexte;
-
-    const valeur = document.createElement("span");
-    valeur.textContent = temperature + " °C";
-
-    bloc.appendChild(titre);
-    bloc.appendChild(valeur);
-    ligne.appendChild(bloc);
-  }
-
-  // Construire les périodes de chaque journée
-  for (let j = 0; j < 7; j++) {
-    const ligne = lignes[j];
-    const evenementsJour = jours[j];
-    const jourPrecedent = jours[(j + 6) % 7];
-
-    if (!ligne || evenementsJour.length === 0) continue;
-
-    // Prolonger la dernière température du jour précédent
-    if (jourPrecedent.length > 0) {
-      const dernier = jourPrecedent[jourPrecedent.length - 1];
-
-      creerBloc(
-        ligne,
-        0,
-        evenementsJour[0].minutes,
-        dernier.temperature
-      );
-    }
-
-    // Étendre chaque événement jusqu'au suivant
-    evenementsJour.forEach((evenement, i) => {
-      const fin = i < evenementsJour.length - 1
-        ? evenementsJour[i + 1].minutes
-        : 1440;
-
-      creerBloc(
-        ligne,
-        evenement.minutes,
+    // Découpage des blocs au passage de minuit.
+    while (debut < fin) {
+      const jour = Math.floor(debut / 1440) % 7;
+      const debutJour = debut % 1440;
+      const finBloc = Math.min(
         fin,
-        evenement.temperature
+        (Math.floor(debut / 1440) + 1) * 1440
       );
-    });
-  }
+
+      const duree = finBloc - debut;
+
+      const bloc = document.createElement("div");
+      bloc.className = "timer-event";
+
+      if (Number(evenement.temperature) <= 18) {
+        bloc.classList.add("evening");
+      }
+
+      bloc.style.left = (debutJour / 1440 * 100) + "%";
+      bloc.style.width = (duree / 1440 * 100) + "%";
+      bloc.style.top = "50%";
+      bloc.style.transform = "translateY(-50%)";
+
+      const heure = Math.floor(debutJour / 60);
+      const minute = debutJour % 60;
+
+      const titre = document.createElement("strong");
+      titre.textContent =
+        String(heure).padStart(2, "0") + ":" +
+        String(minute).padStart(2, "0");
+
+      const valeur = document.createElement("span");
+      valeur.textContent = evenement.temperature + " °C";
+
+      bloc.appendChild(titre);
+      bloc.appendChild(valeur);
+      lignes[jour].appendChild(bloc);
+
+      debut = finBloc;
+    }
+  });
 
   document.getElementById("timerStatus").textContent =
     evenements.length + " événements chargés depuis MELCloud — " +
     (timer.Enabled ? "programmateur activé" : "programmateur désactivé") +
     ".";
 };
+
 
 
 function initialiserGrilleHebdomadaire() {

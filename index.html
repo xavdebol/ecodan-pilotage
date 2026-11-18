@@ -1324,43 +1324,131 @@ const timer = reponse && reponse.timer;
     window.timerEnregistrementEnCours = false;
   }
 } // FIN DE enregistrerProgrammationHebdomadaire()
-  
-// Branchement du bouton ON/OFF
-document.getElementById("btnTimerEnabled").addEventListener("click", function() {
 
+// Branchement du bouton ON/OFF
+document.getElementById("btnTimerEnabled").addEventListener("click", async function() {
+
+  const bouton = this;
   const reponse = window.timerReponseActuelle;
   const timer = reponse && reponse.timer;
 
   if (!timer) {
-    alert("Programmateur non chargé. Actualise les données MELCloud.");
+    afficherStatutTimer(
+      "Programmateur non chargé. Actualise les données MELCloud.",
+      "erreur"
+    );
     return;
   }
 
-  // Inversion de l'état local
-  timer.Enabled = !timer.Enabled;
+  const nouvelEtat = timer.Enabled !== true;
 
-  // Actualisation du bouton
-  const actif = timer.Enabled === true;
+  bouton.disabled = true;
+  afficherStatutTimer("Transmission en cours…", "encours");
 
-  this.textContent = actif
-    ? "Programmation : ON"
-    : "Programmation : OFF";
+  const callbackName = "ecodanVerifyTimer_" + Date.now();
+  const script = document.createElement("script");
 
-  this.classList.toggle("off", !actif);
+  let termine = false;
+  let delai;
 
-  const indicateur = document.getElementById("timerPendingStatus");
+  function terminer(message, type) {
+    if (termine) return;
 
-  if (indicateur) {
-    indicateur.textContent =
-      "État de programmation modifié — à enregistrer";
+    termine = true;
+    clearTimeout(delai);
+    script.remove();
+
+    // Évite qu'une réponse tardive perturbe une transmission suivante
+    window[callbackName] = function() {};
+
+    bouton.disabled = false;
+    afficherStatutTimer(message, type);
   }
 
-  console.log("Nouvel état local du programmateur :", timer.Enabled);
+  try {
+
+    // Transmission de l'état uniquement
+    await fetch(URL_ECRITURE_TIMER, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "modifierTimerEnabled",
+        enabled: nouvelEtat
+      })
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Vérification indépendante : ne reconstruit pas la grille
+    window[callbackName] = function(reponseVerifiee) {
+
+      if (
+        reponseVerifiee &&
+        reponseVerifiee.success === true &&
+        reponseVerifiee.timer &&
+        reponseVerifiee.timer.Enabled === nouvelEtat
+      ) {
+
+        // Seul l'état général est actualisé dans les données locales
+        timer.Enabled = nouvelEtat;
+
+        bouton.textContent = nouvelEtat
+          ? "Programmation : ON"
+          : "Programmation : OFF";
+
+        bouton.classList.toggle("off", !nouvelEtat);
+
+        terminer(
+          nouvelEtat
+            ? "Programmation activée sur MELCloud."
+            : "Programmation désactivée sur MELCloud.",
+          "succes"
+        );
+
+      } else {
+
+        terminer(
+          "MELCloud n'a pas confirmé le changement d'état.",
+          "erreur"
+        );
+
+      }
+    };
+
+    script.src = URL_TIMER +
+      "?timer=1&callback=" + callbackName +
+      "&_=" + Date.now();
+
+    script.onerror = function() {
+      terminer(
+        "Erreur lors de la vérification auprès de MELCloud.",
+        "erreur"
+      );
+    };
+
+    delai = setTimeout(function() {
+      terminer(
+        "Délai dépassé : impossible de vérifier l'état sur MELCloud.",
+        "erreur"
+      );
+    }, 12000);
+
+    document.body.appendChild(script);
+
+  } catch (erreur) {
+
+    terminer(
+      "Erreur de transmission : " + erreur.message,
+      "erreur"
+    );
+
+  }
+
 });
-// Branchement du bouton d'enregistrement
-document.getElementById("btnEnregistrerTimer").addEventListener("click", function() {
-  enregistrerProgrammationHebdomadaire();
-});
+
 
 </script>
 

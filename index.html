@@ -1248,8 +1248,9 @@ async function enregistrerProgrammationHebdomadaire() {
     return;
   }
 
-const reponse = window.timerReponseActuelle;
-const timer = reponse && reponse.timer;
+  const bouton = document.getElementById("btnEnregistrerTimer");
+  const reponse = window.timerReponseActuelle;
+  const timer = reponse && reponse.timer;
 
   if (!timer || !Array.isArray(timer.Seasons)) {
     alert("Programmateur indisponible. Recharge les données MELCloud.");
@@ -1299,14 +1300,108 @@ const timer = reponse && reponse.timer;
 
   window.timerEnregistrementEnCours = true;
 
-  const indicateur = document.getElementById("timerPendingStatus");
+  if (bouton) bouton.disabled = true;
 
-  if (indicateur) {
-    indicateur.textContent = "Transmission du programmateur...";
+  afficherStatutTimer(
+    "Transmission du programmateur...",
+    "encours"
+  );
+
+  const callbackName = "ecodanVerifySave_" + Date.now();
+  const script = document.createElement("script");
+
+  let termine = false;
+  let delai;
+
+  // Normalisation des objets pour comparer leurs paramètres
+  function normaliser(objet) {
+    if (Array.isArray(objet)) {
+      return objet.map(normaliser);
+    }
+
+    if (objet && typeof objet === "object") {
+      const resultat = {};
+
+      Object.keys(objet).sort().forEach(cle => {
+        resultat[cle] = normaliser(objet[cle]);
+      });
+
+      return resultat;
+    }
+
+    return objet;
+  }
+
+  // Comparaison du planning envoyé avec celui relu
+  function planningIdentique(attendu, obtenu) {
+
+    if (
+      !obtenu ||
+      !Array.isArray(obtenu.Seasons) ||
+      attendu.Enabled !== obtenu.Enabled ||
+      attendu.Seasons.length !== obtenu.Seasons.length
+    ) {
+      return false;
+    }
+
+    for (let i = 0; i < attendu.Seasons.length; i++) {
+
+      const saisonA = attendu.Seasons[i];
+      const saisonB = obtenu.Seasons[i];
+
+      if (
+        saisonA.ID != saisonB.ID ||
+        saisonA.Name !== saisonB.Name ||
+        saisonA.StartDay != saisonB.StartDay ||
+        saisonA.StartMonth != saisonB.StartMonth ||
+        !Array.isArray(saisonB.Events) ||
+        saisonA.Events.length !== saisonB.Events.length
+      ) {
+        return false;
+      }
+
+      for (let j = 0; j < saisonA.Events.length; j++) {
+
+        const evenementA = saisonA.Events[j];
+        const evenementB = saisonB.Events[j];
+
+        if (
+          evenementA.ID != evenementB.ID ||
+          evenementA.EventDay != evenementB.EventDay ||
+          evenementA.EventTime !== evenementB.EventTime ||
+          evenementA.SetTemperatureZone1 != evenementB.SetTemperatureZone1 ||
+          JSON.stringify(normaliser(evenementA.Settings)) !==
+          JSON.stringify(normaliser(evenementB.Settings))
+        ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  // Fin de transmission et libération du bouton
+  function terminer(message, type) {
+
+    if (termine) return;
+
+    termine = true;
+    clearTimeout(delai);
+    script.remove();
+
+    window[callbackName] = function() {};
+
+    window.timerEnregistrementEnCours = false;
+
+    if (bouton) bouton.disabled = false;
+
+    afficherStatutTimer(message, type);
   }
 
   try {
 
+    // Transmission du programmateur complet
     await fetch(URL_ECRITURE_TIMER, {
       method: "POST",
       mode: "no-cors",
@@ -1321,25 +1416,81 @@ const timer = reponse && reponse.timer;
       donnees
     );
 
-    if (indicateur) {
-      indicateur.textContent =
-        "Transmission envoyée — confirmation MELCloud à vérifier";
-    }
+    // Laisser le temps à MELCloud de traiter la demande
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Relecture indépendante du programmateur
+    window[callbackName] = function(reponseVerifiee) {
+
+      if (
+        !reponseVerifiee ||
+        reponseVerifiee.success !== true ||
+        !reponseVerifiee.timer
+      ) {
+        terminer(
+          "MELCloud n'a pas confirmé l'enregistrement.",
+          "erreur"
+        );
+        return;
+      }
+
+      // Vérification réelle du contenu enregistré
+      if (!planningIdentique(donnees, reponseVerifiee.timer)) {
+        terminer(
+          "Le planning relu est différent de celui envoyé.",
+          "erreur"
+        );
+        return;
+      }
+
+      // Actualisation des données locales après confirmation
+      window.timerReponseActuelle = reponseVerifiee;
+
+      const indicateur = document.getElementById("timerPendingStatus");
+
+      if (indicateur) {
+        indicateur.textContent = "Aucune modification en attente";
+      }
+
+      terminer(
+        "Planning enregistré et vérifié sur MELCloud.",
+        "succes"
+      );
+    };
+
+    script.src = URL_TIMER +
+      "?timer=1&callback=" + callbackName +
+      "&_=" + Date.now();
+
+    script.onerror = function() {
+      terminer(
+        "Erreur lors de la relecture du planning MELCloud.",
+        "erreur"
+      );
+    };
+
+    delai = setTimeout(function() {
+      terminer(
+        "Délai dépassé : impossible de vérifier le planning sur MELCloud.",
+        "erreur"
+      );
+    }, 12000);
+
+    document.body.appendChild(script);
 
   } catch (erreur) {
 
     console.error("Erreur de transmission du programmateur :", erreur);
 
-    if (indicateur) {
-      indicateur.textContent = "Erreur de transmission";
-    }
+    terminer(
+      "Erreur lors de la transmission : " + erreur.message,
+      "erreur"
+    );
 
-    alert("Erreur lors de la transmission : " + erreur.message);
-
-  } finally {
-    window.timerEnregistrementEnCours = false;
   }
+
 } // FIN DE enregistrerProgrammationHebdomadaire()
+
 // Branchement du bouton d'enregistrement
 document.getElementById("btnEnregistrerTimer")
   .addEventListener("click", enregistrerProgrammationHebdomadaire);

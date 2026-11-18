@@ -1340,7 +1340,9 @@ const timer = reponse && reponse.timer;
     window.timerEnregistrementEnCours = false;
   }
 } // FIN DE enregistrerProgrammationHebdomadaire()
-
+// Branchement du bouton d'enregistrement
+document.getElementById("btnEnregistrerTimer")
+  .addEventListener("click", enregistrerProgrammationHebdomadaire);
 // Branchement du bouton ON/OFF
 // Adresse de transmission vers MELCloud
 const URL_ECRITURE_TIMER =

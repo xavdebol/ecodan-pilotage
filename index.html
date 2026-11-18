@@ -1326,6 +1326,36 @@ const timer = reponse && reponse.timer;
 } // FIN DE enregistrerProgrammationHebdomadaire()
 
 // Branchement du bouton ON/OFF
+// Adresse de transmission vers MELCloud
+const URL_ECRITURE_TIMER =
+  "https://script.google.com/macros/s/AKfycbyvdvsUrmhJefHjFVB08_j-W6aYZoVlH2e5htC9tSgFdtQN06TlAj7vwveS7dKCcCpiqQ/exec";
+
+// Affichage des messages de transmission
+function afficherStatutTimer(message, type) {
+
+  let indicateur = document.getElementById("timerTransmissionStatus");
+
+  if (!indicateur) {
+    indicateur = document.createElement("div");
+    indicateur.id = "timerTransmissionStatus";
+
+    const compteur = document.getElementById("timerPendingStatus");
+
+    if (compteur) {
+      compteur.insertAdjacentElement("afterend", indicateur);
+    }
+  }
+
+  indicateur.textContent = message;
+  indicateur.style.fontWeight = "600";
+  indicateur.style.marginTop = "6px";
+
+  indicateur.style.color =
+    type === "succes" ? "#16a34a" :
+    type === "erreur" ? "#dc2626" :
+    "#2563eb";
+}
+  
 document.getElementById("btnTimerEnabled").addEventListener("click", async function() {
 
   const bouton = this;

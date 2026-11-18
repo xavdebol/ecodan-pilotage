@@ -98,7 +98,20 @@ h1 {
   gap: 12px;
   margin-bottom: 16px;
 }
+.timer-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
+.timer-title-row h2 {
+  margin: 0;
+}
+
+.timer-title-row #btnTimerEnabled {
+  padding: 5px 12px;
+  min-width: 48px;
+}
 .timer-actions {
   display: flex;
   align-items: center;
@@ -468,22 +481,26 @@ h1 {
 
 <section class="panel" id="timerPanel">
 
+
 <div class="timer-header">
   <div>
-    <h2>Programmation hebdomadaire</h2>
+    <div class="timer-title-row">
+      <h2>Programmation hebdomadaire</h2>
+      <button id="btnTimerEnabled" type="button">
+        ON
+      </button>
+    </div>
+
     <div class="timer-description">
       Planning chauffage synchronisé avec MELCloud
     </div>
+
     <div id="timerPendingStatus" class="timer-pending">
       Aucune modification en attente
     </div>
   </div>
 
   <div class="timer-actions">
-    <button id="btnTimerEnabled" type="button">
-      Programmation : ON
-    </button>
-
     <button id="btnEnregistrerTimer" type="button">
       Enregistrer vers MELCloud
     </button>
@@ -493,6 +510,7 @@ h1 {
     </button>
   </div>
 </div>
+
 
 
   
@@ -1006,10 +1024,8 @@ const boutonTimer = document.getElementById("btnTimerEnabled");
 if (boutonTimer) {
   const actif = reponse.timer.Enabled === true;
 
-  boutonTimer.textContent = actif
-    ? "Programmation : ON"
-    : "Programmation : OFF";
-
+ boutonTimer.textContent = actif ? "ON" : "OFF";
+  
   boutonTimer.classList.toggle("off", !actif);
 }
 
@@ -1425,9 +1441,7 @@ document.getElementById("btnTimerEnabled").addEventListener("click", async funct
         // Seul l'état général est actualisé dans les données locales
         timer.Enabled = nouvelEtat;
 
-        bouton.textContent = nouvelEtat
-          ? "Programmation : ON"
-          : "Programmation : OFF";
+bouton.textContent = nouvelEtat ? "ON" : "OFF";
 
         bouton.classList.toggle("off", !nouvelEtat);
 

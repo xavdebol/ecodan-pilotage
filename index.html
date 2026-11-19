@@ -761,6 +761,8 @@ const ctx = document.getElementById('temperatureChart');
   });
   // Réception des données de la PAC
   window.ecodanReceiveData = function(result) {
+    console.log("HISTORIQUE CONSIGNES reçu :", result.historiqueConsignes);
+console.log("HISTORIQUE TEMPÉRATURES reçu :", result.hourlyData);
     const status = document.getElementById('connectionStatus');
 
     if (!result || !result.success || !result.data) {

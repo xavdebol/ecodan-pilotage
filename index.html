@@ -785,7 +785,7 @@ window.temperatureChart.data.labels =
     window.temperatureChart.update();
     // Mise à jour du graphique des températures intérieure et extérieure
     const hourly = result.hourlyData || [];
-const live = result.liveData;
+    const live = result.liveData;
 
 // Mise à jour des indicateurs de fonctionnement
 if (live) {
@@ -875,8 +875,28 @@ window.roomOutdoorChart.data.labels =
     window.roomOutdoorChart.data.datasets[1].data =
       hourly.map(d => d.exterieur);
     
-    window.roomOutdoorChart.data.datasets[2].data =
-      hourly.map(() => live ? Number(live.consigne) : null);
+// Reconstruction de l'historique des consignes
+const historique = Array.isArray(result.historiqueConsignes)
+  ? [...result.historiqueConsignes].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    )
+  : [];
+
+window.roomOutdoorChart.data.datasets[2].data =
+  hourly.map(point => {
+    const datePoint = new Date(point.date).getTime();
+    let consigne = null;
+
+    for (const changement of historique) {
+      if (new Date(changement.date).getTime() <= datePoint) {
+        consigne = Number(changement.consigne);
+      } else {
+        break;
+      }
+    }
+
+    return consigne;
+  });
 
     window.roomOutdoorChart.update();
     // Mise à jour des indicateurs principaux

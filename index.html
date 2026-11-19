@@ -877,6 +877,7 @@ window.roomOutdoorChart.data.labels =
     window.roomOutdoorChart.data.datasets[1].data =
       hourly.map(d => d.exterieur);
     
+
 // Reconstruction de l'historique des consignes
 const historique = Array.isArray(result.historiqueConsignes)
   ? [...result.historiqueConsignes].sort(
@@ -886,11 +887,27 @@ const historique = Array.isArray(result.historiqueConsignes)
 
 window.roomOutdoorChart.data.datasets[2].data =
   hourly.map(point => {
-    const datePoint = new Date(point.date).getTime();
+    const datePoint = new Date(point.date);
+
+    // Même décalage horaire que celui appliqué aux étiquettes
+    const decalage = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Paris',
+      timeZoneName: 'shortOffset'
+    }).formatToParts(datePoint)
+      .find(p => p.type === 'timeZoneName').value;
+
+    const correspondance = decalage.match(/GMT([+-]\d+)/);
+    const heuresDecalage = correspondance
+      ? Number(correspondance[1])
+      : 0;
+
+    const datePointGraphique =
+      datePoint.getTime() + heuresDecalage * 60 * 60 * 1000;
+
     let consigne = null;
 
     for (const changement of historique) {
-      if (new Date(changement.date).getTime() <= datePoint) {
+      if (new Date(changement.date).getTime() <= datePointGraphique) {
         consigne = Number(changement.consigne);
       } else {
         break;
@@ -899,6 +916,7 @@ window.roomOutdoorChart.data.datasets[2].data =
 
     return consigne;
   });
+
 
     window.roomOutdoorChart.update();
     // Mise à jour des indicateurs principaux

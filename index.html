@@ -879,15 +879,8 @@ window.roomOutdoorChart.data.labels =
     
 
 // Reconstruction de l'historique des consignes
-const historique = Array.isArray(result.historiqueConsignes)
-  ? [...result.historiqueConsignes].sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
-    )
-  : [];
-
 window.roomOutdoorChart.data.datasets[2].data =
-  hourly.map(point => {
-    const datePoint = new Date(point.date);
+  hourly.map(d => d.consigne);
 
     // Même décalage horaire que celui appliqué aux étiquettes
     const decalage = new Intl.DateTimeFormat('en-US', {

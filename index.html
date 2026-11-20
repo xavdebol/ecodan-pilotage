@@ -878,40 +878,11 @@ window.roomOutdoorChart.data.labels =
       hourly.map(d => d.exterieur);
     
 
-// Reconstruction de l'historique des consignes
+// Historique des consignes fourni directement par MELCloud
 window.roomOutdoorChart.data.datasets[2].data =
   hourly.map(d => d.consigne);
-
-    // Même décalage horaire que celui appliqué aux étiquettes
-    const decalage = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'Europe/Paris',
-      timeZoneName: 'shortOffset'
-    }).formatToParts(datePoint)
-      .find(p => p.type === 'timeZoneName').value;
-
-    const correspondance = decalage.match(/GMT([+-]\d+)/);
-    const heuresDecalage = correspondance
-      ? Number(correspondance[1])
-      : 0;
-
-    const datePointGraphique =
-      datePoint.getTime() + heuresDecalage * 60 * 60 * 1000;
-
-    let consigne = null;
-
-    for (const changement of historique) {
-      if (new Date(changement.date).getTime() <= datePointGraphique) {
-        consigne = Number(changement.consigne);
-      } else {
-        break;
-      }
-    }
-
-    return consigne;
-  });
-
-
-    window.roomOutdoorChart.update();
+       window.roomOutdoorChart.update();
+    
     // Mise à jour des indicateurs principaux
     const derniereHeure = hourly[hourly.length - 1];
 
